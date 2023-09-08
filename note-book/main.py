@@ -1,8 +1,7 @@
 from collections import UserDict
-from datetime import datetime
 import pickle
 
-FILENAME = 'notebook.pkl'
+FILENAME = './note-book/notebook.pkl'
 
 
 class Record:
@@ -92,7 +91,7 @@ if __name__ == "__main__":
     # note = Note('hello first note')
     # record = Record(note, 'first, second, third')
     # note_book.add_note(record)
-    res = note_book.search_notes('lalal')
-    for result in res:
+    # res = note_book.search_notes('second')
+    for result in note_book:
         print(result.note.value)
         print(result.tags)
