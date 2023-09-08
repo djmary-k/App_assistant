@@ -1,4 +1,5 @@
 from collections import UserDict
+from operator import itemgetter, attrgetter
 import pickle
 
 FILENAME = './note-book/notebook.pkl'
@@ -56,6 +57,9 @@ class NoteBook(UserDict):
             ):
                 results.append(record)
         return results
+    
+    def sort_notes(self):
+        return sorted(self.data.values(), key=attrgetter('tags'))
 
     def save_data(self):
         with open(FILENAME, 'wb') as file:
@@ -88,10 +92,12 @@ class NoteBook(UserDict):
 
 if __name__ == "__main__":
     note_book = NoteBook()
-    # note = Note('hello first note')
-    # record = Record(note, 'first, second, third')
+    # note = Note('hello third note')
+    # record = Record(note, 'aaaaa')
     # note_book.add_note(record)
     # res = note_book.search_notes('second')
+    # res = note_book.sort_notes()
+    # res = note_book.sort_notes()
     for result in note_book:
         print(result.note.value)
         print(result.tags)
