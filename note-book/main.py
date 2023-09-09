@@ -13,7 +13,7 @@ class Record:
             self.tags.extend(list(set(tags.split(', '))))
 
     def add_tag(self, tag: str):
-        if (tag in self.tags):
+        if tag in self.tags:
             print('Tag already exists')
         else:
             self.tags.append(tag)
@@ -26,21 +26,29 @@ class Record:
 
 
 class Field:
-    def __init__(self, value: str):
-        self.value = value
+    pass
 
 
 class Note(Field):
-    def is_valid(self, value: str):
-        return len(value) > 2
+    def __init__(self):
+        self.__value = None
 
-    def __set__(self, _, value: str):
-        if not self.is_valid(value):
+    def is_valid(self, new_value: str):
+        return len(new_value) > 2
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if not self.is_valid(new_value):
             raise ValueError("Note is too short")
-        self.value = value
+        self.__value = new_value
 
-    def __get__(self):
-        return self.value
+
+    # def __getitem__(self, _):
+    #     return self.__value
 
 
 class NoteBook(UserDict):
@@ -57,7 +65,7 @@ class NoteBook(UserDict):
             ):
                 results.append(record)
         return results
-    
+
     def sort_notes(self):
         return sorted(self.data.values(), key=attrgetter('tags'))
 
@@ -92,12 +100,13 @@ class NoteBook(UserDict):
 
 if __name__ == "__main__":
     note_book = NoteBook()
-    # note = Note('hello third note')
-    # record = Record(note, 'aaaaa')
-    # note_book.add_note(record)
-    # res = note_book.search_notes('second')
-    # res = note_book.sort_notes()
-    # res = note_book.sort_notes()
+    note = Note()
+    note.value = 'a545'
+    record = Record(note, 'aaaab, aaaa5')
+    note_book.add_note(record)
+    res = note_book.search_notes('a')
+    res = note_book.sort_notes()
+    res = note_book.sort_notes()
     for result in note_book:
         print(result.note.value)
         print(result.tags)
