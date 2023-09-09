@@ -6,7 +6,7 @@ class ChangeType:
     This class represents types of possible changes
     which can be performed for a record in the address book.
     """
-    EDIT_NAME, EDIT_PHONE, EDIT_EMAIL, ADD_PHONE, ADD_EMAIL, REMOVE_PHONE, REMOVE_EMAIL, EDIT_BIRTHDAY, REMOVE_BIRTHDAY = range(9)
+    EDIT_NAME, EDIT_PHONE, EDIT_EMAIL, ADD_PHONE, ADD_EMAIL, REMOVE_PHONE, REMOVE_EMAIL, EDIT_BIRTHDAY, REMOVE_BIRTHDAY, EDIT_ADDRESS, REMOVE_ADDRESS = range(11)
 
 
 class Change:
