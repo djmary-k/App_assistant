@@ -4,7 +4,7 @@ from change import *
 import warnings
 import pickle
 import os
-#from collections.abc import Iterable
+from datetime import datetime, timedelta
 from myexception import *
 
 
@@ -146,7 +146,7 @@ class AddressBook(UserDict):
         """
         try:
             record = self.data.pop(old_name)
-            record.set_name(new_name)
+            record.edit_name(new_name)
             self.add_record(record)
             return record
         except KeyError:
@@ -181,6 +181,10 @@ class AddressBook(UserDict):
                 record.edit_birthday(**kwargs)
             case ChangeType.REMOVE_BIRTHDAY:
                 record.remove_birthday()
+            case ChangeType.EDIT_ADDRESS:
+                record.edit_address(**kwargs)
+            case ChangeType.REMOVE_ADDRESS:
+                record.remove_address()
             case _:
                 raise MyException("Change type is unknown.")
         return record
@@ -247,6 +251,15 @@ class AddressBook(UserDict):
             raise MyException(f"No record with the birthday date '{birthday}' in the address book.")
         return res
 
+    def get_record_by_days_till_birthday(self, n_days: str):
+        try:
+            n_days = int(n_days)
+            cur_day = datetime.now()
+            birthday = cur_day + timedelta(days=n_days)
+            birthday = f"{birthday.day}/{birthday.month}"
+            return self.get_record_by_birthday(birthday)
+        except ValueError:
+            raise MyException(f"The given parameter '{n_days}' for the number of days is not a valid integer number.")
     def get_record_by_string(self, substring: str):
         """
         Finds all records where specified string is found in the contact

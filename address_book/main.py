@@ -56,7 +56,7 @@ RESET_COLOR = '\033[0m'
 IDX_STRING = "idx="
 WARNING_WRONG_N_PER_PAGE = f"Parameter for the number of records per page should be a positive integer. Parameter " \
                            f"which was given: "
-INSTRUCTION_CHANGE = "\t<name> -n <new_name>\t-\tto change the contact name from its current value\n" \
+INSTRUCTION_CHANGE = "\t<name> +n <new_name>\t-\tto change the contact name from its current value\n" \
                      "\t\t\t\t\t\t\t\t<name> to the value <new_name>\n" \
                      f"\t<name> [+p|+e] <phone|email> ({IDX_STRING}[first|last|<idx>])\t-\tto add a new\n" \
                      "\t\t\t\t\t\t\t\tphone number (+p <phone>) or e-mail (+e <email>)\n" \
@@ -79,14 +79,16 @@ INSTRUCTION_CHANGE = "\t<name> -n <new_name>\t-\tto change the contact name from
                      f"\t\t\t\t\t\t\t\t(<phone|email>) or position ({IDX_STRING}) in the record - at the\n" \
                      "\t\t\t\t\t\t\t\tbeginning (first), end (last), specific index\n" \
                      "\t\t\t\t\t\t\t\t(<idx> starting with 1)\n" \
-                     f"\t<name> birthday <new_birthday>\t-\tto add or edit the birthday date in the record\n" \
-                     "\t\t\t\t\t\t\t\twith the name <name> (the old value will be replaced)\n" \
-                     f"\t<name> r-birthday\t-\tto remove the birthday date from the record with the name <name>."
+                     "\t<name> [+b|+a]  <new_birthday|address>\t-\tto add or edit the birthday date\n" \
+                     "\t\t\t\t\t\t\t\t(+b) or the address (+a) in the record with the name <name>\n" \
+                     "\t\t\t\t\t\t\t\t(the old value will be replaced)\n" \
+                     f"\t<name> [-b|-a]\t-\tto remove the birthday date or the address from the record with the name <name>."
 
 INSTRUCTION_FIND = "\t-n <name> (<n>)\t\t-\tto find the record with the contact name <name>\n" \
                    "\t-p <phone> (<n>)\t-\tto find the record(s) with the phone number <phone>\n" \
                    "\t-e <email> (<n>)\t-\tto find the record(s) with the e-mail <email>\n" \
                    "\t-b <birthday> (<n>)\t-\tto find the record(s) with the birthday <birthday> (format: day/month)\n" \
+                   "\t-b-days <N> (<n>)\t-\tto find the record(s) with the birthday in <N> days (format: integer)\n" \
                    "\t-np <substr> (<n>)\t-\tto find the record(s) with the substring <substr> in the name or phone\n" \
                    "\t(The optional parameter <n> specifies the maximum number of records to be displayed at once.)"
 
@@ -144,7 +146,7 @@ def exit_handler(*args):
 def add_handler(args):  # takes *arguments: 0-unlimited
     """
     Adds new contact to the address book.
-    :param args: expected argument in the contact name.
+    :param args: expected contact info to safe in the contact name (name is obligatory).
     :return: confirmation that the new record with the specified contact name was added.
     """
     if len(args) < 1:
@@ -155,6 +157,7 @@ def add_handler(args):  # takes *arguments: 0-unlimited
     phone = "NO PHONE NUMBER"
     email = "NO E-MAIL"
     birthday = "NO BIRTHDAY DATE"
+    address = "NO ADDRESS"
     if len(args) > 1:
         phone = args[1]
         record.add_phone_number(phone)
@@ -164,8 +167,13 @@ def add_handler(args):  # takes *arguments: 0-unlimited
     if len(args) > 3:
         birthday = args[3]
         record.edit_birthday(birthday)
+    if len(args) > 4:
+        address = " ".join(args[4:])
+        record.edit_address(address)
     ADDRESSBOOK.add_record(record)
-    return f"New contact '{name}' with the phone number '{phone}', e-mail '{email}' and the birthday date '{birthday}' successfully added."
+    return (f"New contact '{name}' with the phone number '{phone}', e-mail '{email}',"
+            f" birthday date '{birthday}', address '{address}' successfully added.\n"
+            f"New record:\n{record.to_string()}")
 
 
 def change_handler(args):
@@ -174,17 +182,22 @@ def change_handler(args):
     :param args: expects arguments which specify the change to be performed.
     :return: confirmation of the performed change.
     """
-    if len(args) < 2 or (len(args) == 2 and args[1].lower() not in ["r-birthday"]) or\
-            (args[1].lower() not in ["-n", "+p", "+e", "-p", "-e", "edit-e", "edit-p", "birthday", "r-birthday"]) or \
+    if len(args) < 2 or (len(args) == 2 and args[1].lower() not in ["-b", "-a"]) or\
+            (args[1].lower() not in ["+n", "+p", "+e", "-p", "-e", "edit-e", "edit-p",
+                                     "+b", "-b", "+a", "-a"]) or \
             (args[1].lower() in ["edit-e", "edit-p"] and len(args) < 4):
         raise MyException(f"Please, specify the change parameters as follows:\n{INSTRUCTION_CHANGE}")
     param = args[1].lower()
-    if param == "birthday":
-        change = Change(changetype=ChangeType.EDIT_BIRTHDAY, name=args[0], new_birthday=args[2])
-    elif param == "r-birthday":
-        change = Change(changetype=ChangeType.REMOVE_BIRTHDAY, name=args[0])
-    elif param == "-n":
+    if param == "-n":
         change = Change(changetype=ChangeType.EDIT_NAME, name=args[0], new_name=args[2])
+    elif param == "+b":
+        change = Change(changetype=ChangeType.EDIT_BIRTHDAY, name=args[0], new_birthday=args[2])
+    elif param == "-b":
+        change = Change(changetype=ChangeType.REMOVE_BIRTHDAY, name=args[0])
+    elif param == "+a":
+        change = Change(changetype=ChangeType.EDIT_ADDRESS, name=args[0], new_address=" ".join(args[2:]))
+    elif param == "-a":
+        change = Change(changetype=ChangeType.REMOVE_ADDRESS, name=args[0])
     elif param in ["+p", "+e"]:
         idx = None
         add_to_beginning = False
@@ -227,11 +240,12 @@ def change_handler(args):
 
 def find_handler(args):
     """
-    Finds a record/records in the address book: by name, phone number, e-mail or birthday date.
+    Finds a record/records in the address book: by name, phone number, e-mail, birthday date
+    or the number of days till birthday.
     :param args: parameters to find the record(s).
     :return: the string representing the record(s).
     """
-    if len(args) < 2 or args[0].lower() not in ["-np", "-n", "-p", "-e", "-b"]:
+    if len(args) < 2 or args[0].lower() not in ["-np", "-n", "-p", "-e", "-b", "-b-days"]:
         raise MyException(f"Please, specify the search parameter, e.g.:\n{INSTRUCTION_FIND}")
     match args[0].lower():
         case "-np":
@@ -249,6 +263,9 @@ def find_handler(args):
         case "-b":
             param = "birthday date"
             res = ADDRESSBOOK.get_record_by_birthday(args[1])
+        case "-b-days":
+            param = "number of days till birthdays"
+            res = ADDRESSBOOK.get_record_by_days_till_birthday(args[1])
     if not res:
         return f"No record with the {param} '{args[1]}' found."
     elif type(res) == Record:

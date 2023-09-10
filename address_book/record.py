@@ -10,23 +10,29 @@ class Record:
     Class representing a single record in an address book.
     """
 
-    def __init__(self, name: str, phone=None, email=None, birthday=None):
+    def __init__(self, name: str, phone=None, email=None, birthday=None, address=None):
         self.name = Name(name)
         self.phones = deque()
         self.emails = deque()
         self.birthday = None
+        self.address = None
         if phone:
             self.add_phone_number(phone)
         if email:
             self.add_email(email)
         if birthday:
             self.edit_birthday(birthday)
+        if address:
+            self.edit_address(address)
 
-    def set_name(self, new_name: str):
-        self.name.set_value(new_name)
+    def get_field_value(self, el: Field):
+        if el:
+            return el.get_value()
+        else:
+            return ""
 
     def get_name(self):
-        return self.name.get_value()
+        return self.get_field_value(self.name) #self.name.get_value()
 
     def get_all_values(self, el_list: deque):
         """
@@ -47,10 +53,27 @@ class Record:
         return self.get_all_values(self.emails)
 
     def get_birthday(self):
-        if self.birthday:
-            return self.birthday.get_value()
-        else:
-            return ""
+        return self.get_field_value(self.birthday)
+        #if self.birthday:
+        #    return self.birthday.get_value()
+        #else:
+        #    return ""
+
+    def get_address(self):
+        return self.get_field_value(self.address)
+        #if self.address:
+        #    return self.address.get_value()
+        #else:
+        #    return ""
+
+    def edit_field(self, self_field_name: str, new_field: Field):
+        name2self_filed = {"name": self.name, "birthday": self.birthday, "address": self.address}
+        self_field = name2self_filed[self_field_name]
+        if self_field:
+            warnings.warn(f"WARNING: you are overwriting existing {self_field.get_name()} info. "
+                          f"Old info: '{self_field.get_value()}', new info: '{new_field.get_value()}'.")
+
+        self_field = new_field
 
     def edit_name(self, new_name):
         self.name.set_value(new_name)
@@ -62,9 +85,18 @@ class Record:
             warnings.warn(f"WARNING: you are overwriting existing birthday info. Old info: '{self.birthday.get_value()}', new info: '{new_birthday}'.")
             self.birthday.set_value(new_birthday)
 
+    def edit_address(self, new_address: str):
+        if not self.address:
+            self.address = Address(new_address)
+        else:
+            warnings.warn(f"WARNING: you are overwriting existing address info. Old info: '{self.address.get_value()}', new info: '{new_address}'.")
+            self.address.set_value(new_address)
+
     def remove_birthday(self):
         self.birthday = None
 
+    def remove_address(self):
+        self.address = None
     def is_in_list(self, el: Field, el_list: deque):
         el_value = el.get_value()
         list_values = self.get_all_values(el_list)
@@ -285,10 +317,13 @@ class Record:
         else:
             emails = [f"{position + 1}. {email.get_value()}" for position, email in enumerate(self.emails)]
         line = "----------------------------------------------------------------"
+        name = self.get_name()
         phones = "\n\t\t\t".join(phones)
         emails = "\n\t\t\t".join(emails)
         birthday = self.display_birthday_info()
-        res = f"CONTACT INFO\nNAME:\t\t{self.get_name()}\n{line}\nBIRTHDAY:\t{birthday}\n{line}\nPHONE(S):\t{phones}\n{line}\nEMAIL(S):\t{emails}"
+        address = self.get_address()
+        res = (f"CONTACT INFO\nNAME:\t\t{name}\n{line}\nBIRTHDAY:\t{birthday}\n{line}\n"
+               f"PHONE(S):\t{phones}\n{line}\nEMAIL(S):\t{emails}\n{line}\nADDRESS:\t{address}")
         return res
 
 

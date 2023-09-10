@@ -186,6 +186,14 @@ class Birthday(Field):
         else:
             return False
 
+class Address(Field):
+    """
+    Class representing the contact's address stored in a record of an address book.
+    """
+
+    def __init__(self, value: str):
+        super(Address, self).__init__(value)
+        self.name = "address"
 
 if __name__ == "__main__":
     # testing validate() methods
