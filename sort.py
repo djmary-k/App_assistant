@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 import shutil
 import re
-import os
+
 
 images = []
 documents = []
@@ -63,11 +63,7 @@ DYRECTORY_NAME = {
 EXTENSION = set()
 
 def read_folder(path: Path, folder_to_scan: Path) -> None:
-    """
-    Функція виконує ітераційне зчитування заданої папки (path), відправляючи на обробку файли з цієї і вкладених папок.
-
-    Параметри path і folder_for_scan обов'язкові, передбачають тип даних Path.
-    """
+    
     for el in path.iterdir():
         if Path(el).is_dir():
             if el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'My others'):
@@ -77,11 +73,7 @@ def read_folder(path: Path, folder_to_scan: Path) -> None:
             handle_file(fullname, path, folder_to_scan)
 
 def handle_file(file: Path, path: Path, folder_to_scan: Path) -> None:
-    """
-    Функція опрацьовує заданий файл (file) (приведення його назви у нормалізований вигляд і підбір відповідної папки для його переміщення).
-
-    Параметри file. path і folder_to_scan обов'язкові, передбачають тип даних Path.
-    """
+    
     file_name = file.name.split('.')[0]
     ext = file.suffix[1:]
          
@@ -105,11 +97,7 @@ def handle_file(file: Path, path: Path, folder_to_scan: Path) -> None:
             handle_folder(file, folder_to_scan, target_directory)
 
 def normalize(element: str) -> str:
-    """
-    Функція здійснює в рядку elementтранслітерацію кирилиці на латинський алфавіт, а також Замінює всі символи, окрім латинських літер, цифр на '_'.
-
-    Параметр element обов'язковий, передбачає тип даних String.
-    """
+    
     CYRILLIC_SYMBOLS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяєіїґ"
     TRANSLATION = ("a", "b", "v", "g", "d", "e", "e", "j", "z", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u",
                "f", "h", "ts", "ch", "sh", "sch", "", "y", "", "e", "yu", "ya", "je", "i", "ji", "g")
@@ -122,11 +110,7 @@ def normalize(element: str) -> str:
     return element_trans
 
 def handle_folder(file: Path, folder_to_scan: Path, target_folder: Path) -> None:
-    """
-    Функція створює задану папку (target_folder) і переносить в неї заданий файл (file).
-
-    Параметрм file, folder_to_scan і target_folder - обов'язкові, передбачають тип даних Path.
-    """
+    
     target_folder.mkdir(exist_ok=True, parents=True)
     if target_folder == folder_to_scan / 'Archives':
         handle_archive(file, target_folder)
@@ -134,11 +118,7 @@ def handle_folder(file: Path, folder_to_scan: Path, target_folder: Path) -> None
         file.replace(target_folder / normalize(file.name))
    
 def handle_archive(file: Path, target_folder: Path) -> None:
-    """
-    Функція створює папку і розпаковує в неї архів (file).
-
-    Параметри file і target_folder обов'язкові, передбачають тип даних Path.
-    """
+    
     archive_name = normalize(file.name.replace(file.suffix,''))
     folder_for_file = target_folder / archive_name
     folder_for_file.mkdir(exist_ok=True, parents=True)
@@ -153,11 +133,7 @@ def handle_archive(file: Path, target_folder: Path) -> None:
     file.unlink()
 
 def handle_empty_folders(path: Path) -> None:
-    """
-    Функція видаляє пусті папки із заданої директорії (path).
     
-    Параметр path обов'язковий, передбачає тип даних Path.
-    """
     for el in path.iterdir():
          if el.is_dir() and el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'My others'):
             try:
@@ -166,11 +142,7 @@ def handle_empty_folders(path: Path) -> None:
                 print('The folder is not emty')
                 
 def rename_files_and_folders(path: Path) -> None:
-    """
-    Функція нормалізує назви усіх папок і файлів у заданій папці (path).
     
-    Параметр path обов'язковий, передбачає тип даних Path.
-    """
     for el in path.iterdir():
         if el.is_dir():
             path = el.replace(path / normalize(el.name))
