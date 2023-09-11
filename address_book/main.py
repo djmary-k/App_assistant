@@ -45,7 +45,7 @@ Possible improvements:
     extend 'add' command: to allow multiple phones and e-mails to be provided
 """
 
-from addressbook import *
+from address_book.addressbook import *
 import os
 import warnings
 
@@ -97,7 +97,7 @@ HELP_STRING = "This programme supports the following commands\n" \
               "1.\tGreeting:\n" \
               "\thello\n" \
               "2.\tAdding new contact to the address book:\n" \
-              "\tadd <name> (<phone> <email> <birthday>)\n" \
+              "\tadd <name> (<phone> <email> <birthday> <address>)\n" \
               f"3.\tEditing existing contact in the address book:\n{INSTRUCTION_CHANGE}\n" \
               f"4.\tSearching for a record in the address book:\n{INSTRUCTION_FIND}\n" \
               "5.\tDeleting a contact from the address book:\n" \
@@ -122,8 +122,10 @@ HELP_STRING = "This programme supports the following commands\n" \
               "14.\tExiting the programme (executes storing as in 12. beforehand):\n" \
               "\tgood bye\n" \
               "\tclose\n" \
-              "\texit\n" \
-              "15.\tGetting help:\n" \
+              "\texit\n"\
+              "15. Going back to the main menu:\n"\
+              "\tmainmenu\n" \
+              "16.\tGetting help:\n" \
               "\thelp\n" \
               "\nAll commands are case insensitive."
 
@@ -150,7 +152,7 @@ def add_handler(args):  # takes *arguments: 0-unlimited
     :return: confirmation that the new record with the specified contact name was added.
     """
     if len(args) < 1:
-        raise MyException("Give me a name for the new contact, please.")
+        raise MyException("A name for the new contact is missing. Please, try again.")
     name = args[0]  # change to 1) args[0].title() if you want to always capitalize the 1st letter or to 2) args[0].lower().title()
     record = Record(name)
 
@@ -391,10 +393,10 @@ def store_handler(args):
     :param args: not needed.
     :return: confirmation of the storage.
     """
-    folder = "users"
-    if folder not in os.listdir():
-        os.makedirs(folder)
-    ADDRESSBOOK.store_to_file(path=folder)
+    path = "./address_book/users"
+    if not os.path.exists(path):
+        os.makedirs(path)
+    ADDRESSBOOK.store_to_file(path=path)
     return f"The address book for the user '{ADDRESSBOOK.get_username()}' was successfully stored."
 
 
@@ -418,6 +420,8 @@ def load_handler(args):
 def help_handler(args):
     return HELP_STRING
 
+def mainmenu_handler(args):
+    return exit_handler()
 
 COMMANDS = {
     hello_handler: ["hello"],  # greeting
@@ -434,11 +438,12 @@ COMMANDS = {
     store_handler: ["store"],  # storing current address book into a file
     load_handler: ["load"],  # loading an address book from a file
     exit_handler: ["good bye", "close", "exit"],  # exiting the programme
-    help_handler: ["help"]  # getting help
+    help_handler: ["help"],  # getting help
+    mainmenu_handler: ["mainmenu"] # going back to the main menu
 }
 
 
-def command_parcer(raw_str: str) -> (callable, list):
+def command_parser(raw_str: str) -> (callable, list):
     case_insensitive = raw_str.lower()
     for handler, commands in COMMANDS.items():
         for command in commands:
@@ -460,15 +465,17 @@ def input_error(fnc):
 
 
 @input_error
-def main():
+def main(*args):
+    print("Hello and welcome to the ADDRESS BOOK! How can I help you?\n"
+          "(Note: you can enter 'help' to get the list of possible commands)")
     while True:
         u_input = input(">>> ")
         with warnings.catch_warnings(record=True) as warning_list:
-            func, data = command_parcer(u_input)
+            func, data = command_parser(u_input)
             while not func:
                 print("The command is not defined. Please, use a valid command")
                 u_input = input(">>> ")
-                func, data = command_parcer(u_input)
+                func, data = command_parser(u_input)
             result = func(data)
         for w in warning_list:
             print(f"\t{WARNING_COLOR}{w.message}{RESET_COLOR}")
@@ -485,7 +492,7 @@ def main():
                 print("No more results found.")
         else:
             print(result)
-        if func == exit_handler:
+        if func in [exit_handler, mainmenu_handler]:
             break
 
 
