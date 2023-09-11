@@ -12,7 +12,7 @@ DESCRIPTION = (
     'delete note by: delete "name"',
     'search note by: search "keyword"',
     'add tag by: add_tag "name" "tags"',
-    'delete tag by: del_tag "name" "tag"'
+    'delete tag by: del_tag "name"\nthen enter tag to delete'
     )
 
 class Field:
@@ -74,8 +74,12 @@ class NoteBook(UserDict):
 
     def show_note(self, name: str) -> str:
         try:
-            note = name + ':\n' + self.data[name].note.value
-            return note
+            note = prettytable.PrettyTable()
+            note.align = 'l'
+            note.field_names = [self.data[name].name]
+            note.add_row([self.data[name].note.value])
+            note.add_row(['Tags: ' + ', '.join(self.data[name].tags)])
+            print(note)
         except KeyError:
             print('Note not found!')
 
@@ -95,7 +99,7 @@ class NoteBook(UserDict):
                     or query in record.name
                 ):
                     results.add(record.name)
-            return '\n'.join(results)
+            return ', '.join(results)
         return 'No value to search'
 
     def sort_notes(self):
@@ -160,7 +164,7 @@ def command_handler(command: str, name: str, tag: str):
         note_book.edit_note(name, value)
 
     elif command == 'show':
-        print(note_book.show_note(name))
+        note_book.show_note(name)
 
     elif command == 'delete':
         note_book.delete_note(name)
@@ -175,6 +179,8 @@ def command_handler(command: str, name: str, tag: str):
         note_book.data[name].add_tag(tag)
 
     elif command == 'del_tag':
+        print(', '.join(note_book.data[name].tags))
+        tag = input('Choose tag to delete: ')
         note_book.data[name].delete_tag(tag)
 
     else:
@@ -188,6 +194,7 @@ def main():
         if not user_input:
             continue
         if user_input.lower() in ('exit', 'quit', 'close', 'goodbye'):
+            note_book.save_data()
             print('Good bye!')
             break
         user_input = command_parser(user_input)
