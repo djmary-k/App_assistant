@@ -1,29 +1,19 @@
 from collections import UserDict
-from operator import itemgetter, attrgetter
+from operator import attrgetter
 import pickle
+import prettytable
 
-FILENAME = './note-book/notebook.pkl'
-
-
-class Record:
-    def __init__(self, note: str, tags=None):
-        self.note = note
-        self.tags = []
-        if tags:
-            self.tags.extend(list(set(tags.split(', '))))
-
-    def add_tag(self, tag: str):
-        if tag in self.tags:
-            print('Tag already exists')
-        else:
-            self.tags.append(tag)
-
-    def delete_tag(self, tag: str):
-        try:
-            self.tags.remove(tag)
-        except ValueError:
-            print('Tag does not exist')
-
+FILENAME = './note_book/notebook.pkl'
+COMMANDS = ('add', 'edit', 'show', 'delete', 'search', 'add_tag', 'del_tag')
+DESCRIPTION = (
+    'add note by: add "name"\nthen enter a note',
+    'edit note by: edit "name"',
+    'show note by: show "name"',
+    'delete note by: delete "name"',
+    'search note by: search "keyword"',
+    'add tag by: add_tag "name" "tags"',
+    'delete tag by: del_tag "name" "tag"'
+    )
 
 class Field:
     pass
@@ -47,24 +37,66 @@ class Note(Field):
         self.__value = new_value
 
 
-    # def __getitem__(self, _):
-    #     return self.__value
+class Record:
+    def __init__(self, name: str, note: Note, tags=None):
+        self.name = name
+        self.note = note
+        self.tags = []
+        if tags:
+            self.tags.extend(list(set(tags.split(', '))))
+
+    def add_tag(self, tag: str):
+        if tag in self.tags:
+            print('Tag already exists')
+        else:
+            self.tags.append(tag)
+
+    def delete_tag(self, tag: str):
+        try:
+            self.tags.remove(tag)
+        except ValueError:
+            print('Tag does not exist')
 
 
 class NoteBook(UserDict):
-    def add_note(self, record: Record):
-        self.data[record.note.value] = record
+    def add_note(self, name: str, value: str, tags: str):
+        note = Note()
+        note.value = value
+        record = Record(name, note, tags)
+        self.data[record.name] = record
         self.save_data()
 
-    def search_notes(self, query):
-        results = []
-        for record in self.data.values():
-            if (
-                query.lower() in record.note.value.lower()
-                or any(query in tag for tag in record.tags)
-            ):
-                results.append(record)
-        return results
+    def edit_note(self, name: str, new_note: str):
+        try:
+            self.data[name] = new_note
+        except KeyError:
+            print('Note not found!')
+
+    def show_note(self, name: str) -> str:
+        try:
+            note = name + ':\n' + self.data[name].note.value
+            return note
+        except KeyError:
+            print('Note not found!')
+
+    def delete_note(self, name: str):
+        try:
+            self.data.pop(name)
+        except KeyError:
+            print('Note not found!')
+
+    def search_notes(self, query: str) -> str:
+        results = set()
+        if query:
+            for record in self.data.values():
+                if (
+                    query.lower() in record.note.value.lower()
+                    or any(query in tag for tag in record.tags)
+                    or query in record.name
+                ):
+                    results.add(record.name)
+            return '\n'.join(results)
+        return 'No value to search'
 
     def sort_notes(self):
         return sorted(self.data.values(), key=attrgetter('tags'))
@@ -97,16 +129,71 @@ class NoteBook(UserDict):
         else:
             raise StopIteration
 
+def command_list():
+    description = prettytable.PrettyTable()
+    description.field_names = ['Command', 'Description']
+    description.align = 'l'
+    for command, descr in zip(COMMANDS, DESCRIPTION):
+        description.add_row([command, descr])
+    return description
+
+
+def command_parser(raw_input: str):
+    user_input = raw_input.split(' ')
+    name = None
+    tag = None
+    command = user_input[0]
+    if len(user_input) > 1:
+        name = user_input[1]
+    if len(user_input) > 2:
+        tag = user_input[2]
+    return (command, name, tag)
+
+def command_handler(command: str, name: str, tag: str):
+    if command == 'add':
+        value = input(f'{name}:\n')
+        tags = input('Put some tags: ')
+        note_book.add_note(name, value, tags)
+
+    elif command == 'edit':
+        value = input(f'{name}\n')
+        note_book.edit_note(name, value)
+
+    elif command == 'show':
+        print(note_book.show_note(name))
+
+    elif command == 'delete':
+        note_book.delete_note(name)
+
+    elif command == 'help':
+        print(command_list())
+
+    elif command == 'search':
+        print(note_book.search_notes(name))
+
+    elif command == 'add_tag':
+        note_book.data[name].add_tag(tag)
+
+    elif command == 'del_tag':
+        note_book.data[name].delete_tag(tag)
+
+    else:
+        print('Unknown command')
+
+def main():
+    command_list()
+    print('You are in Notebook. How can I help you?')
+    while True:
+        user_input = input('NoteBook: ')
+        if not user_input:
+            continue
+        if user_input.lower() in ('exit', 'quit', 'close', 'goodbye'):
+            print('Good bye!')
+            break
+        user_input = command_parser(user_input)
+        command_handler(user_input[0].lower(), user_input[1], user_input[2])
+
 
 if __name__ == "__main__":
     note_book = NoteBook()
-    note = Note()
-    note.value = 'a545'
-    record = Record(note, 'aaaab, aaaa5')
-    note_book.add_note(record)
-    res = note_book.search_notes('a')
-    res = note_book.sort_notes()
-    res = note_book.sort_notes()
-    for result in note_book:
-        print(result.note.value)
-        print(result.tags)
+    main()
