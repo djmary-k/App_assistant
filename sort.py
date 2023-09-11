@@ -3,40 +3,7 @@ from pathlib import Path
 import shutil
 import re
 
-
-images = []
-documents = []
-audio = []
-video = []
-archives = []
-unknown = []
-my_others = []
-REGISTER_EXTENSION = {
-    'JPEG': images,
-    'JPG': images,
-    'PNG': images,
-    'SVG': images,
-    'AVI': video, 
-    'MP4': video, 
-    'MOV': video, 
-    'MKV': video,
-    'DOC': documents, 
-    'DOCX': documents,
-    'TXT': documents, 
-    'PDF': documents, 
-    'XLSX': documents, 
-    'PPTX': documents,
-    'MP3': audio,
-    'OGG': audio, 
-    'WAV': audio, 
-    'AMR': audio,
-    'M4A': audio,
-    'ZIP': archives,
-    'GZ': archives, 
-    'TAR': archives
-}
-
-DYRECTORY_NAME = {
+DIRECTORY_NAME = {
     'JPEG': "Images",
     'JPG': "Images",
     'PNG': "Images",
@@ -60,41 +27,34 @@ DYRECTORY_NAME = {
     'GZ': "Archives", 
     'TAR': "Archives"
 }
-EXTENSION = set()
 
-def read_folder(path: Path, folder_to_scan: Path) -> None:
+def read_folder(path: Path, destination_folder: Path) -> None:
     
     for el in path.iterdir():
         if Path(el).is_dir():
-            if el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'My others'):
-                read_folder(Path(el), folder_to_scan)
+            if el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'Others'):
+                read_folder(Path(el), destination_folder)
         else:
             fullname = path / el.name
-            handle_file(fullname, path, folder_to_scan)
+            handle_file(fullname, path, destination_folder)
 
-def handle_file(file: Path, path: Path, folder_to_scan: Path) -> None:
+def handle_file(file: Path, path: Path, destination_folder: Path) -> None:
     
     file_name = file.name.split('.')[0]
     ext = file.suffix[1:]
          
     if not ext:  
-        my_others.append(normalize(file.name))
-        target_directory = folder_to_scan / 'My others'
-        handle_folder(file, folder_to_scan, target_directory)
+        target_folder = destination_folder / 'Others'
+        replace_file(file, target_folder)
     else:
-        name = file_name+ '.' + ext
+        name = file_name + '.' + ext
         file = path / name
         try:
-            container = REGISTER_EXTENSION[ext.upper()]
-            EXTENSION.add(ext.upper())
-            container.append(normalize(file.name))
-            target_directory = folder_to_scan / DYRECTORY_NAME[ext.upper()]
-            handle_folder(file, folder_to_scan, target_directory)
+            target_folder = destination_folder / DIRECTORY_NAME[ext.upper()]
+            replace_file(file, target_folder)
         except KeyError:
-            unknown.append(ext)
-            my_others.append(normalize(file.name))
-            target_directory = folder_to_scan / 'My others'
-            handle_folder(file, folder_to_scan, target_directory)
+            target_folder = destination_folder / 'Others'
+            replace_file(file, target_folder)
 
 def normalize(element: str) -> str:
     
@@ -109,28 +69,38 @@ def normalize(element: str) -> str:
     element_trans = re.sub(r'\W^\.', '_', element_trans)    
     return element_trans
 
-def handle_folder(file: Path, folder_to_scan: Path, target_folder: Path) -> None:
-    
+def replace_file(file: Path, target_folder: Path) -> None:
     target_folder.mkdir(exist_ok=True, parents=True)
-    if target_folder == folder_to_scan / 'Archives':
+    ext = file.suffix[1:].upper()
+    if ext in DIRECTORY_NAME and DIRECTORY_NAME[ext] == 'Archives':
         handle_archive(file, target_folder)
     else:
         file.replace(target_folder / normalize(file.name))
-   
+       
+
+def rename_files_and_folders(path: Path) -> None:
+    
+    for el in path.iterdir():
+        if el.is_dir():
+            path = el.replace(path / normalize(el.name))
+            rename_files_and_folders(path)
+        else:
+            el.replace(path / normalize(el.name))
+            
+
 def handle_archive(file: Path, target_folder: Path) -> None:
     
     archive_name = normalize(file.name.replace(file.suffix,''))
     folder_for_file = target_folder / archive_name
     folder_for_file.mkdir(exist_ok=True, parents=True)
-    # archives.append(normalize(file.name))
     try:
         shutil.unpack_archive(file, folder_for_file)
         rename_files_and_folders(folder_for_file)
     except shutil.ReadError:
         print('It is not archive')
         folder_for_file.rmdir()
-    print(f'archive = {file}')
     file.unlink()
+
 
 def handle_empty_folders(path: Path) -> None:
     
@@ -141,13 +111,6 @@ def handle_empty_folders(path: Path) -> None:
             except:
                 print('The folder is not emty')
                 
-def rename_files_and_folders(path: Path) -> None:
-    
-    for el in path.iterdir():
-        if el.is_dir():
-            path = el.replace(path / normalize(el.name))
-            rename_files_and_folders(path)
-        else:
-            el.replace(path / normalize(el.name))
+
 
                     
