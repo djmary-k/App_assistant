@@ -187,7 +187,7 @@ def command_handler(command: str, name: str, tag: str):
         print('Unknown command')
 
 def main():
-    command_list()
+    print(command_list())
     print('You are in Notebook. How can I help you?')
     while True:
         user_input = input('NoteBook: ')
