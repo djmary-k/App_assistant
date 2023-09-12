@@ -27,4 +27,5 @@ def clean_folder_main():
     
     return
     
-
+if __name__ == "__main__":
+    clean_folder_main()
