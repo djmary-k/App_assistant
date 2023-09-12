@@ -40,8 +40,9 @@ def read_folder(path: Path, destination_folder: Path) -> None:
 
 def handle_file(file: Path, path: Path, destination_folder: Path) -> None:
     
-    file_name = file.name.split('.')[0]
-    ext = file.suffix[1:]
+    file_name = file.name.rsplit('.',1)[0]
+    # ext = file.suffix[1:]
+    ext = file.name.rsplit('.',1)[1]
          
     if not ext:  
         target_folder = destination_folder / 'Others'
@@ -105,11 +106,9 @@ def handle_archive(file: Path, target_folder: Path) -> None:
 def handle_empty_folders(path: Path) -> None:
     
     for el in path.iterdir():
-         if el.is_dir() and el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'My others'):
-            try:
-                el.rmdir()
-            except:
-                print('The folder is not emty')
+         if el.is_dir() and el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'Others'):
+            el.rmdir()
+            
                 
 
 
