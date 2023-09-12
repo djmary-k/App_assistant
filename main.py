@@ -1,6 +1,6 @@
 from address_book.main import main as ab
 from note_book.main import main as nb
-# from clean_folder.main import main as cf
+from file_sorter.main import main as cf
 from prettytable.colortable import ColorTable, Themes
 
 def hello_handler():
@@ -69,7 +69,7 @@ COMMANDS = {
     exit_handler: ['5'],
     ab: '1',
     nb: '2',
-    # cf: '3',
+    cf: '3',
     commands_descr: '4',
 }
 
@@ -91,8 +91,7 @@ def run():
         result = func()
         if result:       
             print(result)
-        if func in [ab, nb]:
-        # if func in [ab, nb, cf]:
+        if func in [ab, nb, cf]:
             print('Welcome back to main menu! Please, choose one of the following options:')
             print(menu())
         if result == 'Good bye!':

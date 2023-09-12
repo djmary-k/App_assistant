@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import shutil
 import re
+import os
 
 DIRECTORY_NAME = {
     'JPEG': "Images",
@@ -104,12 +105,12 @@ def handle_archive(file: Path, target_folder: Path) -> None:
 
 
 def handle_empty_folders(path: Path) -> None:
-    
-    for el in path.iterdir():
-         if el.is_dir() and el.name not in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'Others'):
-            el.rmdir()
-            
-                
-
-
-                    
+    for cur_dir, subdirs, files in os.walk(path, topdown=False):
+                # print(cur_dir, subdirs, files)
+                for subdir in subdirs:
+                    if not os.listdir(os.path.join(cur_dir, subdir)) and not subdir in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'Others'):
+                        # print(f'removing {subdir}')
+                        os.rmdir(os.path.join(cur_dir, subdir))
+    if not os.listdir(cur_dir) and not Path(cur_dir).name in ('Archives', 'Video', 'Audio', 'Documents', 'Images', 'Others'):
+        # print(f'removing {cur_dir}')
+        os.rmdir(cur_dir)
