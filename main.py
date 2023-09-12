@@ -88,7 +88,10 @@ def run():
         if not user_input:
             continue                
         func = command_parser(user_input)
-        result = func()
+        if isinstance(func, str):
+            result = func
+        else:
+            result = func()
         if result:       
             print(result)
         if func in [ab, nb]:
