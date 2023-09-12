@@ -4,15 +4,22 @@ import pickle
 import prettytable
 
 FILENAME = './note_book/notebook.pkl'
-COMMANDS = ('add', 'edit', 'show', 'delete', 'search', 'add_tag', 'del_tag')
+COMMANDS = (
+    'add', 'edit', 'show', 'show_all', 'delete', 'search',
+    'add_tag', 'del_tag', 'help', 'exit'
+      )
+
 DESCRIPTION = (
-    'add note by: add "name"\nthen enter a note',
-    'edit note by: edit "name"',
-    'show note by: show "name"',
-    'delete note by: delete "name"',
-    'search note by: search "keyword"',
-    'add tag by: add_tag "name" "tags"',
-    'delete tag by: del_tag "name"\nthen enter tag to delete'
+    'add note by: add <name>\nthen enter a note',
+    'edit note by: edit <name>',
+    'show note by: show <name>',
+    'show all notes',
+    'delete note by: delete <name>',
+    'search note by tag: search <keyword>',
+    'add tag by: add_tag <name>\nthen enter tags to add,\nseparated by ", "',
+    'delete tag by: del_tag <name>\nthen enter tag to delete',
+    'show this description',
+    'exit to main menu'
     )
 
 class Field:
@@ -33,8 +40,9 @@ class Note(Field):
     @value.setter
     def value(self, new_value):
         if not self.is_valid(new_value):
-            raise ValueError("Note is too short")
-        self.__value = new_value
+            print("Note is too short")
+        else:
+            self.__value = new_value
 
 
 class Record:
@@ -44,12 +52,16 @@ class Record:
         self.tags = []
         if tags:
             self.tags.extend(list(set(tags.split(', '))))
+            self.tags = sorted(self.tags)
 
-    def add_tag(self, tag: str):
-        if tag in self.tags:
-            print('Tag already exists')
-        else:
-            self.tags.append(tag)
+    def add_tag(self, tags: str):
+        tags = list(set(tags.split(', ')))
+        for tag in tags:
+            if tag in self.tags:
+                print(f'Tag "{tag}" already exists')
+            else:
+                self.tags.append(tag)
+                self.tags = sorted(self.tags)
 
     def delete_tag(self, tag: str):
         try:
@@ -65,10 +77,11 @@ class NoteBook(UserDict):
         record = Record(name, note, tags)
         self.data[record.name] = record
         self.save_data()
+        
 
     def edit_note(self, name: str, new_note: str):
         try:
-            self.data[name] = new_note
+            self.data[name].note.value = new_note
         except KeyError:
             print('Note not found!')
 
@@ -93,17 +106,35 @@ class NoteBook(UserDict):
         results = set()
         if query:
             for record in self.data.values():
-                if (
-                    query.lower() in record.note.value.lower()
-                    or any(query in tag for tag in record.tags)
-                    or query in record.name
-                ):
-                    results.add(record.name)
-            return ', '.join(results)
+                if (any(query in tag for tag in record.tags)):
+                    results.add(record)
+
+            results = self.sort_notes(list(results))
+            return ', '.join(note.name for note in results)
         return 'No value to search'
 
-    def sort_notes(self):
-        return sorted(self.data.values(), key=attrgetter('tags'))
+    def show_all_notes(self):
+        result = prettytable.PrettyTable()
+        result.align = 'l'
+        result.header = False
+        lines = []
+        line = ''
+        for note in self.data.values():
+            if not line:
+                line += note.name
+                continue
+            if len(line + note.name + ', ') > 30:
+                lines.append(line)
+                line = note.name
+            else:
+                line += ', ' + note.name
+        if line:
+            lines.append(line)
+        result.add_row(['\n'.join(lines)])
+        return result
+
+    def sort_notes(self, notes:list[Note]):
+        return sorted(notes, key=attrgetter('tags'))
 
     def save_data(self):
         with open(FILENAME, 'wb') as file:
@@ -132,6 +163,7 @@ class NoteBook(UserDict):
             return self.data[key]
         else:
             raise StopIteration
+note_book = NoteBook()
 
 def command_list():
     description = prettytable.PrettyTable()
@@ -144,27 +176,30 @@ def command_list():
 
 def command_parser(raw_input: str):
     user_input = raw_input.split(' ')
-    name = None
-    tag = None
+    name = ''
     command = user_input[0]
     if len(user_input) > 1:
-        name = user_input[1]
-    if len(user_input) > 2:
-        tag = user_input[2]
-    return (command, name, tag)
+        name = ' '.join(user_input[1:])
+    return (command, name)
 
-def command_handler(command: str, name: str, tag: str):
+def command_handler(command: str, name: str):
     if command == 'add':
-        value = input(f'{name}:\n')
-        tags = input('Put some tags: ')
-        note_book.add_note(name, value, tags)
+        if name in note_book.keys():
+            print('Note already exist')
+        else:
+            value = input(f'{name}:\n')
+            tags = input('Put some tags: ')
+            note_book.add_note(name, value, tags)
 
     elif command == 'edit':
-        value = input(f'{name}\n')
+        value = input('Enter your note:\n')
         note_book.edit_note(name, value)
 
     elif command == 'show':
         note_book.show_note(name)
+
+    elif command == 'show_all':
+        print(note_book.show_all_notes())
 
     elif command == 'delete':
         note_book.delete_note(name)
@@ -176,7 +211,8 @@ def command_handler(command: str, name: str, tag: str):
         print(note_book.search_notes(name))
 
     elif command == 'add_tag':
-        note_book.data[name].add_tag(tag)
+        tags = input('Enter tags to add:\n')
+        note_book.data[name].add_tag(tags)
 
     elif command == 'del_tag':
         print(', '.join(note_book.data[name].tags))
@@ -194,13 +230,10 @@ def main():
         if not user_input:
             continue
         if user_input.lower() in ('exit', 'quit', 'close', 'goodbye'):
-            note_book.save_data()
-            print('Good bye!')
             break
         user_input = command_parser(user_input)
-        command_handler(user_input[0].lower(), user_input[1], user_input[2])
-
+        command_handler(user_input[0].lower(), user_input[1])
+        note_book.save_data()
 
 if __name__ == "__main__":
-    note_book = NoteBook()
     main()
