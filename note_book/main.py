@@ -8,6 +8,7 @@ COMMANDS = (
     'add', 'edit', 'show', 'show_all', 'delete', 'search',
     'add_tag', 'del_tag', 'help', 'exit'
       )
+
 DESCRIPTION = (
     'add note by: add <name>\nthen enter a note',
     'edit note by: edit <name>',
@@ -15,7 +16,7 @@ DESCRIPTION = (
     'show all notes',
     'delete note by: delete <name>',
     'search note by tag: search <keyword>',
-    'add tag by: add_tag <name> <tags>',
+    'add tag by: add_tag <name>\nthen enter tags to add,\nseparated by ", "',
     'delete tag by: del_tag <name>\nthen enter tag to delete',
     'show this description',
     'exit to main menu'
@@ -53,12 +54,14 @@ class Record:
             self.tags.extend(list(set(tags.split(', '))))
             self.tags = sorted(self.tags)
 
-    def add_tag(self, tag: str):
-        if tag in self.tags:
-            print('Tag already exists')
-        else:
-            self.tags.append(tag)
-            self.tags = sorted(self.tags)
+    def add_tag(self, tags: str):
+        tags = list(set(tags.split(', ')))
+        for tag in tags:
+            if tag in self.tags:
+                print(f'Tag "{tag}" already exists')
+            else:
+                self.tags.append(tag)
+                self.tags = sorted(self.tags)
 
     def delete_tag(self, tag: str):
         try:
@@ -174,21 +177,18 @@ def command_list():
 def command_parser(raw_input: str):
     user_input = raw_input.split(' ')
     name = ''
-    tag = ''
     command = user_input[0]
     if len(user_input) > 1:
-        name = user_input[1]
-    if len(user_input) > 2:
-        tag = user_input[2]
-    return (command, name, tag)
+        name = ' '.join(user_input[1:])
+    return (command, name)
 
-def command_handler(command: str, name: str, tag: str):
+def command_handler(command: str, name: str):
     if command == 'add':
         if name in note_book.keys():
             print('Note already exist')
         else:
             value = input(f'{name}:\n')
-            tags = input('Put some tags: ').split(', ')
+            tags = input('Put some tags: ')
             note_book.add_note(name, value, tags)
 
     elif command == 'edit':
@@ -211,8 +211,8 @@ def command_handler(command: str, name: str, tag: str):
         print(note_book.search_notes(name))
 
     elif command == 'add_tag':
-        if tag:
-            note_book.data[name].add_tag(tag)
+        tags = input('Enter tags to add:\n')
+        note_book.data[name].add_tag(tags)
 
     elif command == 'del_tag':
         print(', '.join(note_book.data[name].tags))
@@ -230,14 +230,10 @@ def main():
         if not user_input:
             continue
         if user_input.lower() in ('exit', 'quit', 'close', 'goodbye'):
-            note_book.save_data()
             break
-        try:
-            user_input = command_parser(user_input)
-            command_handler(user_input[0].lower(), user_input[1], user_input[2])
-        except:
-            note_book.save_data()
-            print('Something went wrong!')
+        user_input = command_parser(user_input)
+        command_handler(user_input[0].lower(), user_input[1])
+        note_book.save_data()
 
 if __name__ == "__main__":
     main()
