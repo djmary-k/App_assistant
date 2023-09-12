@@ -48,30 +48,71 @@ Possible improvements:
 from address_book.addressbook import *
 import os
 import warnings
+from prettytable import PrettyTable
 
 ADDRESSBOOK = AddressBook()
 WARNING_COLOR = '\033[93m'  # '\033[92m' #'\033[93m'
 RESET_COLOR = '\033[0m'
+PROMT = "AddressBook:"
 
 IDX_STRING = "idx="
 WARNING_WRONG_N_PER_PAGE = f"Parameter for the number of records per page should be a positive integer. Parameter " \
                            f"which was given: "
-INSTRUCTION_CHANGE = "\t<name> +n <new_name>\t-\tto change the contact name from its current value\n" \
-                     "\t\t\t\t\t\t\t\t<name> to the value <new_name>\n" \
-                     f"\t<name> [+p|+e] <phone|email> ({IDX_STRING}[first|last|<idx>])\t-\tto add a new\n" \
+INSTRUCTION_EDIT_TABLE = PrettyTable()
+INSTRUCTION_EDIT_TABLE.field_names = ["COMMAND", "DESCRIPTION"]
+INSTRUCTION_EDIT_TABLE.add_row(["edit <name> +n <new_name>",
+                                "to change the contact name from its current value"
+                                "<name> to the value <new_name>"], divider=True)
+INSTRUCTION_EDIT_TABLE.add_row([f"edit <name> [+p|+e] <phone|email> ({IDX_STRING}[first|last|<idx>])",
+                                f"to add a new phone number (+p <phone>) or e-mail (+e <email>) to the "
+                                f"record with the name <name>, OPTIONALLY: at the specified position ({IDX_STRING})"
+                                f" - at the beginning (first), end (last), specific index (<idx> starting with 1)"],
+                               divider=True)
+
+INSTRUCTION_EDIT_TABLE.add_row([f"edit <name> [-p|-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]]",
+                                "to remove a phone number (-p) or an e-mail (-e) from the record with the "
+                                "name <name>, specifying the target phone number/e-mail by its value "
+                                "(<phone|email>) or position ({IDX_STRING}) in the record - at the "
+                                "beginning (first), end (last), specific index (<idx> starting with 1)"],
+                               divider=True)
+
+INSTRUCTION_EDIT_TABLE.add_row([f"edit <name> [edit-p|edit-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]] <new_phone|email>",
+                                "to edit a phone number (edit-p) or an e-mail (edit-e) in the record with the name <name>"
+                                "(replace an old value with the new value <new_phone|email>), specifying the target phone"
+                                "number/e-mail by its value (<phone|email>) or position ({IDX_STRING}) in the record - at the"
+                                "beginning (first), end (last), specific index (<idx> starting with 1)"],
+                               divider=True)
+INSTRUCTION_EDIT_TABLE.add_row(["edit <name> [+b|+a]  <new_birthday|address>",
+                                "to add or edit the birthday date (+b) or the address (+a) in the record with the name <name>"
+                                "(the old value will be replaced)"],
+                               divider=True)
+INSTRUCTION_EDIT_TABLE.add_row(["edit <name> [-b|-a]",
+                                "to remove the birthday date or the address from the record with the name <name>."],
+                               divider=True)
+INSTRUCTION_EDIT_TABLE.align = "l"
+#INSTRUCTION_EDIT_TABLE[0][0].align = "c"
+INSTRUCTION_EDIT_TABLE._max_width = {"COMMAND": 40, "DESCRIPTION": 60}
+
+SYNATAX_INFO = "(NB: elements in () are optional, [] specify options to select from)" \
+
+INSTRUCTION_EDIT = f"{INSTRUCTION_EDIT_TABLE}\n\t{SYNATAX_INFO}"
+
+INSTRUCTION_EDIT_2 = "\tedit <name> +n <new_name>\t-\tto change the contact name from its current value\n" \
+                    "\t\t\t\t\t\t\t\t<name> to the value <new_name>\n" \
+                     f"\tedit <name> [+p|+e] <phone|email> ({IDX_STRING}[first|last|<idx>])\t-\tto add a new\n" \
                      "\t\t\t\t\t\t\t\tphone number (+p <phone>) or e-mail (+e <email>)\n" \
                      "\t\t\t\t\t\t\t\tto the record with the name <name>,\n" \
                      f"\t\t\t\t\t\t\t\tOPTIONALLY: at the specified position ({IDX_STRING}) -\n" \
                      "\t\t\t\t\t\t\t\tat the beginning (first), end (last), specific index\n" \
                      "\t\t\t\t\t\t\t\t(<idx> starting with 1)\n" \
-                     f"\t<name> [-p|-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]]\t-\tto remove a phone\n" \
+                     f"\tedit <name> [-p|-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]]\t-\tto remove a phone\n" \
                      "\t\t\t\t\t\t\t\tnumber (-p) or an e-mail (-e)\n" \
                      "\t\t\t\t\t\t\t\tfrom the record with the name <name>,\n" \
                      "\t\t\t\t\t\t\t\tspecifying the target phone number/e-mail by its value\n" \
                      f"\t\t\t\t\t\t\t\t(<phone|email>) or position ({IDX_STRING}) in the record - at the\n" \
                      "\t\t\t\t\t\t\t\tbeginning (first), end (last), specific index\n" \
                      "\t\t\t\t\t\t\t\t(<idx> starting with 1)\n" \
-                     f"\t<name> [edit-p|edit-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]] <new_phone|email>\t-\n" \
+                     f"\tedit <name> [edit-p|edit-e] [<phone|email>|{IDX_STRING}[first|last|<idx>]] <new_phone|email>\t-\n" \
                      "\t\t\t\t\t\t\t\tto edit a phone number (edit-p) or an e-mail (edit-e)\n" \
                      "\t\t\t\t\t\t\t\tin the record with the name <name> (replace an old value\n" \
                      "\t\t\t\t\t\t\t\twith the new value <new_phone|email>),\n" \
@@ -79,26 +120,27 @@ INSTRUCTION_CHANGE = "\t<name> +n <new_name>\t-\tto change the contact name from
                      f"\t\t\t\t\t\t\t\t(<phone|email>) or position ({IDX_STRING}) in the record - at the\n" \
                      "\t\t\t\t\t\t\t\tbeginning (first), end (last), specific index\n" \
                      "\t\t\t\t\t\t\t\t(<idx> starting with 1)\n" \
-                     "\t<name> [+b|+a]  <new_birthday|address>\t-\tto add or edit the birthday date\n" \
+                     "\tedit <name> [+b|+a]  <new_birthday|address>\t-\tto add or edit the birthday date\n" \
                      "\t\t\t\t\t\t\t\t(+b) or the address (+a) in the record with the name <name>\n" \
                      "\t\t\t\t\t\t\t\t(the old value will be replaced)\n" \
-                     f"\t<name> [-b|-a]\t-\tto remove the birthday date or the address from the record with the name <name>."
+                     f"\tedit <name> [-b|-a]\t-\tto remove the birthday date or the address from the record with the name <name>.\n" \
+                     f"\t{SYNATAX_INFO}"
 
-INSTRUCTION_FIND = "\t-n <name> (<n>)\t\t-\tto find the record with the contact name <name>\n" \
-                   "\t-p <phone> (<n>)\t-\tto find the record(s) with the phone number <phone>\n" \
-                   "\t-e <email> (<n>)\t-\tto find the record(s) with the e-mail <email>\n" \
-                   "\t-b <birthday> (<n>)\t-\tto find the record(s) with the birthday <birthday> (format: day/month)\n" \
-                   "\t-b-days <N> (<n>)\t-\tto find the record(s) with the birthday in <N> days (format: integer)\n" \
-                   "\t-np <substr> (<n>)\t-\tto find the record(s) with the substring <substr> in the name or phone\n" \
+INSTRUCTION_FIND = "\tfind -n <name> (<n>)\t\t-\tto find the record with the contact name <name>\n" \
+                   "\tfind -p <phone> (<n>)\t\t-\tto find the record(s) with the phone number <phone>\n" \
+                   "\tfind -e <email> (<n>)\t\t-\tto find the record(s) with the e-mail <email>\n" \
+                   "\tfind -b <birthday> (<n>)\t-\tto find the record(s) with the birthday <birthday> (format: day/month)\n" \
+                   "\tfind -b-days <N> (<n>)\t\t-\tto find the record(s) with the birthday in <N> days (format: integer)\n" \
+                   "\tfind -np <substr> (<n>)\t\t-\tto find the record(s) with the substring <substr> in the name or phone\n" \
                    "\t(The optional parameter <n> specifies the maximum number of records to be displayed at once.)"
 
 HELP_STRING = "This programme supports the following commands\n" \
-              "(elements in () are optional, [] specify options to select from):\n" \
-              "1.\tGreeting:\n" \
+              f"{SYNATAX_INFO}:\n" \
+              "1.\tGetting greeting:\n" \
               "\thello\n" \
               "2.\tAdding new contact to the address book:\n" \
               "\tadd <name> (<phone> <email> <birthday> <address>)\n" \
-              f"3.\tEditing existing contact in the address book:\n{INSTRUCTION_CHANGE}\n" \
+              f"3.\tEditing existing contact in the address book:\n{INSTRUCTION_EDIT_TABLE}\n" \
               f"4.\tSearching for a record in the address book:\n{INSTRUCTION_FIND}\n" \
               "5.\tDeleting a contact from the address book:\n" \
               "\tdelete <name>\n" \
@@ -119,13 +161,13 @@ HELP_STRING = "This programme supports the following commands\n" \
               "\tstore\n" \
               "13.\tLoading an address book from a file:\n" \
               "\tload <username>\n" \
-              "14.\tExiting the programme (executes storing as in 12. beforehand):\n" \
+              "14.\tExiting the Address Book and going back to the main menu\n" \
+              "\t(executes storing as in 12. beforehand):\n" \
               "\tgood bye\n" \
               "\tclose\n" \
               "\texit\n"\
-              "15. Going back to the main menu:\n"\
               "\tmainmenu\n" \
-              "16.\tGetting help:\n" \
+              "15.\tGetting help:\n" \
               "\thelp\n" \
               "\nAll commands are case insensitive."
 
@@ -142,7 +184,7 @@ def exit_handler(*args):
     Handles programme performance by exiting.
     """
     res = store_handler(args)
-    return f"{res}\nGood bye!"
+    return f"{res}\nYou are leaving the ADDRESS BOOK. See you again later!"
 
 
 def add_handler(args):  # takes *arguments: 0-unlimited
@@ -178,9 +220,9 @@ def add_handler(args):  # takes *arguments: 0-unlimited
             f"New record:\n{record.to_string()}")
 
 
-def change_handler(args):
+def edit_handler(args):
     """
-    Changes existing contact in the address book.
+    Edits existing contact in the address book.
     :param args: expects arguments which specify the change to be performed.
     :return: confirmation of the performed change.
     """
@@ -188,7 +230,7 @@ def change_handler(args):
             (args[1].lower() not in ["+n", "+p", "+e", "-p", "-e", "edit-e", "edit-p",
                                      "+b", "-b", "+a", "-a"]) or \
             (args[1].lower() in ["edit-e", "edit-p"] and len(args) < 4):
-        raise MyException(f"Please, specify the change parameters as follows:\n{INSTRUCTION_CHANGE}")
+        raise MyException(f"Please, specify the 'edit' parameters as follows:\n{INSTRUCTION_EDIT}")
     param = args[1].lower()
     if param == "-n":
         change = Change(changetype=ChangeType.EDIT_NAME, name=args[0], new_name=args[2])
@@ -420,13 +462,10 @@ def load_handler(args):
 def help_handler(args):
     return HELP_STRING
 
-def mainmenu_handler(args):
-    return exit_handler()
-
 COMMANDS = {
     hello_handler: ["hello"],  # greeting
     add_handler: ["add"],  # adding new contact to the address book
-    change_handler: ["change"],  # changing existing contact in the address book
+    edit_handler: ["edit"],  # editing existing contact in the address book
     find_handler: ["find"],  # finding and showing a record in the address book: by name, phone number or e-mail
     delete_handler: ["delete"],  # deleting a contact from the address book
     phone_handler: ["phone"],  # showing all phone numbers saved for a given contact
@@ -437,9 +476,8 @@ COMMANDS = {
     set_username_handler: ["new username"],  # changing the username in the address book
     store_handler: ["store"],  # storing current address book into a file
     load_handler: ["load"],  # loading an address book from a file
-    exit_handler: ["good bye", "close", "exit"],  # exiting the programme
+    exit_handler: ["good bye", "close", "exit", "mainmenu"],  # exiting the programme and going back to the main menu
     help_handler: ["help"],  # getting help
-    mainmenu_handler: ["mainmenu"] # going back to the main menu
 }
 
 
@@ -465,16 +503,14 @@ def input_error(fnc):
 
 
 @input_error
-def main(*args):
-    print("Hello and welcome to the ADDRESS BOOK! How can I help you?\n"
-          "(Note: you can enter 'help' to get the list of possible commands)")
+def main_internal():
     while True:
-        u_input = input(">>> ")
+        u_input = input(f"{PROMT} ")
         with warnings.catch_warnings(record=True) as warning_list:
             func, data = command_parser(u_input)
             while not func:
-                print("The command is not defined. Please, use a valid command")
-                u_input = input(">>> ")
+                print("The command is not defined. Please, use a valid command (call 'help' if needed).")
+                u_input = input(f"{PROMT} ")
                 func, data = command_parser(u_input)
             result = func(data)
         for w in warning_list:
@@ -492,8 +528,14 @@ def main(*args):
                 print("No more results found.")
         else:
             print(result)
-        if func in [exit_handler, mainmenu_handler]:
+        if func == exit_handler:
             break
+
+def main(*args):
+    print("Hello and welcome to the ADDRESS BOOK! How can I help you?\n"
+          "(Note: you can enter 'help' to get the list of possible commands)")
+    main_internal()
+    print("Forwarding to the main menu...")
 
 
 if __name__ == "__main__":
