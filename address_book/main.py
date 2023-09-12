@@ -452,8 +452,9 @@ def load_handler(args):
         raise MyException("Please, specify the username.")
     name = args[0]
     filename = name + ".bin"
-    folder = "users"
-    if folder not in os.listdir() or filename not in os.listdir(folder):
+    folder = "./address_book/users"
+    if not os.path.exists(folder) or filename not in os.listdir(folder):
+    # if folder not in os.listdir() or filename not in os.listdir(folder):
         raise MyException(f"No address book stored for the user '{name}'")
     ADDRESSBOOK.load_from_file(os.path.join(folder, filename))
     return f"Address book for the user '{name}' successfully loaded."
