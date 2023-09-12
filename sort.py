@@ -45,16 +45,16 @@ def handle_file(file: Path, path: Path, destination_folder: Path) -> None:
          
     if not ext:  
         target_folder = destination_folder / 'Others'
-        replace_file(file, target_folder)
+        transfer_file(file, target_folder)
     else:
         name = file_name + '.' + ext
         file = path / name
         try:
             target_folder = destination_folder / DIRECTORY_NAME[ext.upper()]
-            replace_file(file, target_folder)
+            transfer_file(file, target_folder)
         except KeyError:
             target_folder = destination_folder / 'Others'
-            replace_file(file, target_folder)
+            transfer_file(file, target_folder)
 
 def normalize(element: str) -> str:
     
@@ -69,7 +69,7 @@ def normalize(element: str) -> str:
     element_trans = re.sub(r'\W^\.', '_', element_trans)    
     return element_trans
 
-def replace_file(file: Path, target_folder: Path) -> None:
+def transfer_file(file: Path, target_folder: Path) -> None:
     target_folder.mkdir(exist_ok=True, parents=True)
     ext = file.suffix[1:].upper()
     if ext in DIRECTORY_NAME and DIRECTORY_NAME[ext] == 'Archives':
