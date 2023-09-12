@@ -5,21 +5,21 @@ import prettytable
 
 FILENAME = './note_book/notebook.pkl'
 COMMANDS = (
-    'add', 'edit', 'show', 'show_all', 'delete', 'search',
-    'add_tag', 'del_tag', 'help', 'exit'
+    'add <name>', 'edit <name>', 'show <name>', 'show_all', 'delete <name>', 'search <tag>',
+    'add_tag <name>', 'del_tag <name>', 'help', 'exit'
       )
 
 DESCRIPTION = (
-    'add note by: add <name>\nthen enter a note',
-    'edit note by: edit <name>',
-    'show note by: show <name>',
-    'show all notes',
-    'delete note by: delete <name>',
-    'search note by tag: search <keyword>',
-    'add tag by: add_tag <name>\nthen enter tags to add,\nseparated by ", "',
-    'delete tag by: del_tag <name>\nthen enter tag to delete',
-    'show this description',
-    'exit to main menu'
+    'to creat a note with the name <name> and add it to the Note Book. You will be promted to enter the note text under the name.',
+    'to edit a note with the name <name>.',
+    'to show a note with the name <name>.',
+    'to show all notes.',
+    'to delete a note with the name <name>.',
+    'to find all notes with a tag <tag>.',
+    'to add tag to a note with the name <name>. You can enter multiple tags separated by ", "',
+    'to delete a tag from a note with the name <name>. You will be promted to select a tag to delete.',
+    'to call commands description.',
+    'return to the main menu.'
     )
 
 class Field:
@@ -99,6 +99,7 @@ class NoteBook(UserDict):
     def delete_note(self, name: str):
         try:
             self.data.pop(name)
+            print(f'Note with the name "{name}" succesufully deleted.')
         except KeyError:
             print('Note not found!')
 
@@ -171,6 +172,7 @@ def command_list():
     description.align = 'l'
     for command, descr in zip(COMMANDS, DESCRIPTION):
         description.add_row([command, descr])
+    description._max_width={'Command': 20, 'Description': 50}
     return description
 
 
@@ -187,13 +189,15 @@ def command_handler(command: str, name: str):
         if name in note_book.keys():
             print('Note already exist')
         else:
-            value = input(f'{name}:\n')
+            value = input('Enter your note:\n')
             tags = input('Put some tags: ')
             note_book.add_note(name, value, tags)
+            print(f'Note with the name "{name}" succesufully added.')
 
     elif command == 'edit':
         value = input('Enter your note:\n')
         note_book.edit_note(name, value)
+        print(f'Note with the name "{name}" has been edited.')
 
     elif command == 'show':
         note_book.show_note(name)
@@ -211,20 +215,28 @@ def command_handler(command: str, name: str):
         print(note_book.search_notes(name))
 
     elif command == 'add_tag':
-        tags = input('Enter tags to add:\n')
-        note_book.data[name].add_tag(tags)
+        if not name in note_book.keys():
+            print('Note with the name "{name}" does not exist.')
+        else:
+            tags = input('Enter tags to add:\n')
+            note_book.data[name].add_tag(tags)
+            print(f'Tag(s) "{tags}" succesufully added to the note with the name "{name}".')
 
     elif command == 'del_tag':
-        print(', '.join(note_book.data[name].tags))
-        tag = input('Choose tag to delete: ')
-        note_book.data[name].delete_tag(tag)
+        if not name in note_book.keys():
+            print('Note with the name "{name}" does not exist.')
+        else:
+            print(', '.join(note_book.data[name].tags))
+            tag = input('Choose tag to delete: ')
+            note_book.data[name].delete_tag(tag)
+            print(f'Tag "{tag}" succesufully deleted from the note with the name "{name}".')
 
     else:
         print('Unknown command')
 
 def main():
     print(command_list())
-    print('You are in Notebook. How can I help you?')
+    print('You are in Note Book. How can I help you?')
     while True:
         user_input = input('NoteBook: ')
         if not user_input:
