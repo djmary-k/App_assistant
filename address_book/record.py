@@ -3,6 +3,7 @@ from collections import deque
 from address_book.myexception import *
 from datetime import datetime
 import warnings
+from prettytable import PrettyTable
 
 
 class Record:
@@ -125,12 +126,15 @@ class Record:
                 idx -= 1
             except:
                 raise MyException(f"Provided index must be an integer, given: {idx}.")
-            if idx < 0 or idx >= len(el_list):
-                raise MyException(f"Provided index '{idx+1}' is out of range.")
+            if idx < 0 or idx >= len(el_list) + 1:
+                raise MyException(f"Provided index '{idx+1}' is out of range. Possible: 0<idx<={len(el_list)+1}.")
             try:
-                el_list.insert(idx, el)
+                if idx == len(el_list) + 1:
+                    el_list.append(el)
+                else:
+                    el_list.insert(idx, el)
             except:
-                raise MyException(f"Provided index '{idx+1}' is out of range.")
+                raise MyException(f"Provided index '{idx+1}' is out of range. Possible numbers: 1-{len(el_list)+1}.")
         elif add_to_beginning:
             el_list.appendleft(el)
         else:
@@ -180,7 +184,7 @@ class Record:
             try:
                 del el_list[idx]
             except IndexError:
-                raise MyException(f"Provided index '{idx}' is out of range.")
+                raise MyException(f"Provided index '{idx+1}' is out of range.")
         elif first:
             try:
                 el_list.popleft()
@@ -245,7 +249,7 @@ class Record:
             try:
                 el_list[idx] = new_el
             except IndexError:
-                raise MyException(f"Provided index '{idx}' is out of range.")
+                raise MyException(f"Provided index '{idx+1}' is out of range.")
         elif first:
             try:
                 el_list[0] = new_el
@@ -318,12 +322,23 @@ class Record:
             emails = [f"{position + 1}. {email.get_value()}" for position, email in enumerate(self.emails)]
         line = "----------------------------------------------------------------"
         name = self.get_name()
-        phones = "\n\t\t\t".join(phones)
-        emails = "\n\t\t\t".join(emails)
+        phones = "\n".join(phones)  # "\n\t\t\t".join(phones)
+        emails = "\n".join(emails)  # "\n\t\t\t".join(emails)
         birthday = self.display_birthday_info()
         address = self.get_address()
-        res = (f"CONTACT INFO\nNAME:\t\t{name}\n{line}\nBIRTHDAY:\t{birthday}\n{line}\n"
-               f"PHONE(S):\t{phones}\n{line}\nEMAIL(S):\t{emails}\n{line}\nADDRESS:\t{address}")
+        record_as_table = PrettyTable()
+        record_as_table.field_names = ["field", "value"]
+        column_1 = ["NAME", "BIRTHDAY", "PHONE(S)", "EMAIL(S)", "ADDRESS"]
+        column_2 = [name, birthday, phones, emails, address]
+        for col1, col2 in zip(column_1, column_2):
+            record_as_table.add_row([col1, col2], divider=True)
+        record_as_table.align = "l"
+        record_as_table._max_width = {"field": 10, "value": 50}
+        record_as_table._min_width = {"field": 10, "value": 50}
+        record_as_table.header = False
+        res = f"CONTACT INFO\n{record_as_table}"
+        #res = (f"CONTACT INFO\nNAME:\t\t{name}\n{line}\nBIRTHDAY:\t{birthday}\n{line}\n"
+        #       f"PHONE(S):\t{phones}\n{line}\nEMAIL(S):\t{emails}\n{line}\nADDRESS:\t{address}")
         return res
 
 

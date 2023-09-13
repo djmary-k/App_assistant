@@ -260,26 +260,58 @@ class AddressBook(UserDict):
             return self.get_record_by_birthday(birthday)
         except ValueError:
             raise MyException(f"The given parameter '{n_days}' for the number of days is not a valid integer number.")
-    def get_record_by_string(self, substring: str):
+
+    def get_record_by_string(self, substring: str, fields="np"):
         """
         Finds all records where specified string is found in the contact
-        name or the phone number.
+        fields (e.g. name or the phone number).
         :param substring: string to look for in records.
-        :return: list of records which contain the specified string.
+        :param fields: fields to check:
+                        n - for 'name',
+                        p - for 'phone number',
+                        e - for 'emails'
+                        b - for 'birthday'
+                        a - for 'address'
+        :return: list of records which contain the specified (sub)string.
         """
         res = []
         if not self.data:
             raise MyException(f"The address book is empty.")
         for record in self.data.values():
-            if substring in record.get_name():
+            if 'n' in fields and substring in record.get_name():
                 res.append(record)
-            else:
+            elif "b" in fields and substring in record.get_birthday():
+                res.append(record)
+            elif "a" in fields and substring in record.get_address():
+                res.append(record)
+            elif 'p' in fields:
                 for phone in record.get_phones():
                     if substring in phone:
                         res.append(record)
                         break
+            if not res and 'e' in fields:
+                for email in record.get_emails():
+                    if substring in email:
+                        res.append(record)
+                        break
         if not res:
-            raise MyException(f"No record with the substring '{substring}' within the name or phone number(s) in the address book.")
+            raise MyException(f"No record with the substring '{substring}' within the fields '{fields}' in the address book.")
+        return res
+
+    def get_record_by_address(self, address: str):
+        """
+        Finds a record by the address in it.
+        :param address: the address to look for in records.
+        :return: a record with the specified address.
+        """
+        res = []
+        if not self.data:
+            raise MyException(f"The address book is empty.")
+        for record in self.data.values():
+            if address == record.get_address():
+                res.append(record)
+        if not res:
+            raise MyException(f"No record with the address '{address}' in the address book.")
         return res
 
     def store_to_file(self, path="", filename=""):
