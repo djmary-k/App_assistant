@@ -5,28 +5,31 @@ import prettytable
 
 FILENAME = './note_book/notebook.pkl'
 COMMANDS = (
-    'add', 'edit', 'show', 'show_all', 'delete', 'search',
-    'add_tag', 'del_tag', 'help', 'exit'
+    'add <name>', 'edit <name>', 'show <name>',
+    'show_all', 'delete <name>', 'search <keyword>',
+    'search_by <tag>', 'add_tag <name>', 'del_tag <name>', 'help', 'exit'
       )
 
 DESCRIPTION = (
-    'add note by: add <name>\nthen enter a note',
-    'edit note by: edit <name>',
-    'show note by: show <name>',
-    'show all notes',
-    'delete note by: delete <name>',
-    'search note by tag: search <keyword>',
-    'add tag by: add_tag <name>\nthen enter tags to add,\nseparated by ", "',
-    'delete tag by: del_tag <name>\nthen enter tag to delete',
-    'show this description',
-    'exit to main menu'
+    'to creat a note with the name <name> \
+and add it to the Note Book. You will be promted \
+to enter the note text under the name.',
+    'to edit a note with the name <name>.',
+    'to show a note with the name <name>.',
+    'to show all notes.',
+    'to delete a note with the name <name>.',
+    'to find a keyword in the notes <keyword>',
+    'to find all notes with a tag <tag>.',
+    'to add tag to a note with the name <name>. \
+You can enter multiple tags separated by ", "',
+    'to delete a tag from a note with the name <name>. \
+You will be promted to select a tag to delete.',
+    'to call commands description.',
+    'return to the main menu.'
     )
 
-class Field:
-    pass
 
-
-class Note(Field):
+class Note:
     def __init__(self):
         self.__value = None
 
@@ -40,14 +43,17 @@ class Note(Field):
     @value.setter
     def value(self, new_value):
         if not self.is_valid(new_value):
-            print("Note is too short")
+            raise ValueError('Note is too short')
         else:
             self.__value = new_value
 
 
 class Record:
     def __init__(self, name: str, note: Note, tags=None):
-        self.name = name
+        if name:
+            self.name = name
+        else:
+            raise ValueError('Name is too short')
         self.note = note
         self.tags = []
         if tags:
@@ -64,19 +70,22 @@ class Record:
                 self.tags = sorted(self.tags)
 
     def delete_tag(self, tag: str):
-        try:
+        if tag in self.tags:
             self.tags.remove(tag)
-        except ValueError:
-            print('Tag does not exist')
+        else:
+            raise ValueError('Tag not found')
 
 
 class NoteBook(UserDict):
     def add_note(self, name: str, value: str, tags: str):
-        note = Note()
-        note.value = value
-        record = Record(name, note, tags)
-        self.data[record.name] = record
-        self.save_data()
+        try:
+            note = Note()
+            note.value = value
+            record = Record(name, note, tags)
+            self.data[record.name] = record
+            self.save_data()
+        except ValueError as err:
+            print(', '.join(err.args))
         
 
     def edit_note(self, name: str, new_note: str):
@@ -84,6 +93,8 @@ class NoteBook(UserDict):
             self.data[name].note.value = new_note
         except KeyError:
             print('Note not found!')
+        except ValueError:
+            print('Note is too short')
 
     def show_note(self, name: str) -> str:
         try:
@@ -102,35 +113,39 @@ class NoteBook(UserDict):
         except KeyError:
             print('Note not found!')
 
-    def search_notes(self, query: str) -> str:
+    def search_note(self, query):
         results = set()
         if query:
             for record in self.data.values():
-                if (any(query in tag for tag in record.tags)):
+                if query in record.note.value:
                     results.add(record)
 
             results = self.sort_notes(list(results))
             return ', '.join(note.name for note in results)
         return 'No value to search'
 
+    def search_by_tag(self, query: str) -> str:
+        matches = set()
+        result = prettytable.PrettyTable()
+        result.field_names = ['Name', 'Tags']
+        result._max_width = {'Name': 30, 'Tags': 20}
+        if query:
+            for record in self.data.values():
+                if any(query == tag for tag in record.tags):
+                    matches.add(record)
+
+            matches = self.sort_notes(list(matches))
+            for record in matches:
+                result.add_row([record.name, ', '.join(record.tags)])
+            return result
+        return 'No value to search'
+
     def show_all_notes(self):
         result = prettytable.PrettyTable()
         result.align = 'l'
         result.header = False
-        lines = []
-        line = ''
-        for note in self.data.values():
-            if not line:
-                line += note.name
-                continue
-            if len(line + note.name + ', ') > 30:
-                lines.append(line)
-                line = note.name
-            else:
-                line += ', ' + note.name
-        if line:
-            lines.append(line)
-        result.add_row(['\n'.join(lines)])
+        result.max_table_width = 30
+        result.add_row([', '.join(self.data.keys())])
         return result
 
     def sort_notes(self, notes:list[Note]):
@@ -171,6 +186,7 @@ def command_list():
     description.align = 'l'
     for command, descr in zip(COMMANDS, DESCRIPTION):
         description.add_row([command, descr])
+    description._max_width = {'Command': 20, 'Description': 50}
     return description
 
 
@@ -190,10 +206,14 @@ def command_handler(command: str, name: str):
             value = input(f'{name}:\n')
             tags = input('Put some tags: ')
             note_book.add_note(name, value, tags)
+        if name in note_book.keys():
+            print(f'Note with the name "{name}" succesufully added.')
 
     elif command == 'edit':
         value = input('Enter your note:\n')
         note_book.edit_note(name, value)
+        if note_book[name].note.value == value:
+            print(f'Note with the name "{name}" has been edited.')
 
     elif command == 'show':
         note_book.show_note(name)
@@ -208,16 +228,40 @@ def command_handler(command: str, name: str):
         print(command_list())
 
     elif command == 'search':
-        print(note_book.search_notes(name))
+        result = note_book.search_note(name)
+        if result:
+            print(result)
+        else:
+            print(f'Note that contains {name} not found!')
+
+    elif command == 'search_by':
+        result = note_book.search_by_tag(name)
+        if result:
+            print(result)
+        else:
+            print(f'Notes with the {name} tag not found!')
 
     elif command == 'add_tag':
-        tags = input('Enter tags to add:\n')
-        note_book.data[name].add_tag(tags)
+        if not name in note_book.keys():
+            print(f'Note with the name "{name}" does not exist.')
+        elif tags:
+            tags = input('Enter tags to add:\n')
+            note_book.data[name].add_tag(tags)
+            print(f'Tag(s) "{tags}" succesufully added to the note with the name "{name}".')
+        else:
+            print('Tag is too short')
 
     elif command == 'del_tag':
-        print(', '.join(note_book.data[name].tags))
-        tag = input('Choose tag to delete: ')
-        note_book.data[name].delete_tag(tag)
+        if not name in note_book.keys():
+            print(f'Note with the name "{name}" does not exist.')
+        else:
+            print(', '.join(note_book.data[name].tags))
+            tag = input('Choose tag to delete: ')
+            try:
+                note_book.data[name].delete_tag(tag)
+                print(f'Tag "{tag}" succesufully deleted from the note with the name "{name}".')
+            except ValueError as err:
+                print(', '.join(err.args))
 
     else:
         print('Unknown command')
