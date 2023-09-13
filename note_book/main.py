@@ -216,7 +216,7 @@ def command_handler(command: str, name: str):
 
     elif command == 'add_tag':
         if not name in note_book.keys():
-            print('Note with the name "{name}" does not exist.')
+            print(f'Note with the name "{name}" does not exist.')
         else:
             tags = input('Enter tags to add:\n')
             note_book.data[name].add_tag(tags)
@@ -224,7 +224,7 @@ def command_handler(command: str, name: str):
 
     elif command == 'del_tag':
         if not name in note_book.keys():
-            print('Note with the name "{name}" does not exist.')
+            print(f'Note with the name "{name}" does not exist.')
         else:
             print(', '.join(note_book.data[name].tags))
             tag = input('Choose tag to delete: ')

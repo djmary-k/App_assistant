@@ -72,7 +72,7 @@ def commands_descr():
 
 COMMANDS = {
     menu: 'menu',
-    exit_handler: ['5'],
+    exit_handler: ['5', 'exit'],
     ab: '1',
     nb: '2',
     fs: '3',
