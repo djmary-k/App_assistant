@@ -50,10 +50,10 @@ import os
 import warnings
 from prettytable import PrettyTable
 
-ADDRESSBOOK = AddressBook()
+ADDRESSBOOK = None # AddressBook()
 WARNING_COLOR = '\033[93m'  # '\033[92m' #'\033[93m'
 RESET_COLOR = '\033[0m'
-PROMT = "AddressBook:"
+PROMPT = "AddressBook:"
 
 IDX_STRING = "idx="
 WARNING_WRONG_N_PER_PAGE = f"Parameter for the number of records per page should be a positive integer. Parameter " \
@@ -84,7 +84,7 @@ INSTRUCTION_EDIT_TABLE.add_row([f"edit <name> [edit-p|edit-e] [<phone|email>|{ID
                                divider=True)
 INSTRUCTION_EDIT_TABLE.add_row(["edit <name> [+b|+a]  <new_birthday|address>",
                                 "to add or edit the birthday date (+b) or the address (+a) in the record with the name <name>"
-                                "(the old value will be replaced)"],
+                                "(the old value will be replaced). Note: format for <birthday> is 'day/month'."],
                                divider=True)
 INSTRUCTION_EDIT_TABLE.add_row(["edit <name> [-b|-a]",
                                 "to remove the birthday date or the address from the record with the name <name>."],
@@ -131,7 +131,11 @@ INSTRUCTION_FIND = "\tfind -n <name> (<n>)\t\t-\tto find the record with the con
                    "\tfind -e <email> (<n>)\t\t-\tto find the record(s) with the e-mail <email>\n" \
                    "\tfind -b <birthday> (<n>)\t-\tto find the record(s) with the birthday <birthday> (format: day/month)\n" \
                    "\tfind -b-days <N> (<n>)\t\t-\tto find the record(s) with the birthday in <N> days (format: integer)\n" \
-                   "\tfind -np <substr> (<n>)\t\t-\tto find the record(s) with the substring <substr> in the name or phone\n" \
+                   "\tfind -a <address> \t\t\t-\tto find the record(s) with the address <address>\n" \
+                   "\tfind -in-<args> <str> (<n>)\t-\tto find the record(s) with the substring <str> in the contact info,\n" \
+                   "\t\t\t\t\t\t\t\t\t<args> can be any combination of characters where:\n" \
+                   "\t\t\t\t\t\t\t\t\t'n' will stay for 'name', p - for 'phone number',\n" \
+                   "\t\t\t\t\t\t\t\t\t'e' - for 'e-mails', 'b' - for 'birthday', 'a' - for 'address'\n" \
                    "\t(The optional parameter <n> specifies the maximum number of records to be displayed at once.)"
 
 HELP_STRING = "This programme supports the following commands\n" \
@@ -140,6 +144,7 @@ HELP_STRING = "This programme supports the following commands\n" \
               "\thello\n" \
               "2.\tAdding new contact to the address book:\n" \
               "\tadd <name> (<phone> <email> <birthday> <address>)\n" \
+              "\t(Note: format for <birthday> is 'day/month')\n" \
               f"3.\tEditing existing contact in the address book:\n{INSTRUCTION_EDIT_TABLE}\n" \
               f"4.\tSearching for a record in the address book:\n{INSTRUCTION_FIND}\n" \
               "5.\tDeleting a contact from the address book:\n" \
@@ -153,21 +158,23 @@ HELP_STRING = "This programme supports the following commands\n" \
               "9.\tShowing all records in the address book:\n" \
               "\tshow all (<n>)\n" \
               "\t(The optional parameter <n> specifies the maximum number of records to be displayed at once.)\n"\
-              "10.\tShowing the username in the address book (the name of the owner):\n" \
+              "10.\tShowing the name of the current address book owner (user name, also used to store the address book):\n" \
               "\tusername\n" \
-              "11.\tChanging the username in the address book:\n" \
+              "11.\tChanging the name of the owner of the current address book:\n" \
               "\tnew username <username>\n" \
-              "12.\tStoring current address book into a file (under the current username):\n" \
+              "12.\tStoring current address book into a file (under the current user name):\n" \
               "\tstore\n" \
               "13.\tLoading an address book from a file:\n" \
               "\tload <username>\n" \
-              "14.\tExiting the Address Book and going back to the main menu\n" \
+              "14.\tCreating a new empty address book (with default or provided user name):\n" \
+              "\tnew profile (<username>)\n"\
+              "15.\tExiting the Address Book and going back to the main menu\n" \
               "\t(executes storing as in 12. beforehand):\n" \
               "\tgood bye\n" \
               "\tclose\n" \
               "\texit\n"\
               "\tmainmenu\n" \
-              "15.\tGetting help:\n" \
+              "16.\tGetting help:\n" \
               "\thelp\n" \
               "\nAll commands are case insensitive."
 
@@ -184,6 +191,8 @@ def exit_handler(*args):
     Handles programme performance by exiting.
     """
     res = store_handler(args)
+    global ADDRESSBOOK
+    ADDRESSBOOK = None
     return f"{res}\nYou are leaving the ADDRESS BOOK. See you again later!"
 
 
@@ -289,12 +298,10 @@ def find_handler(args):
     :param args: parameters to find the record(s).
     :return: the string representing the record(s).
     """
-    if len(args) < 2 or args[0].lower() not in ["-np", "-n", "-p", "-e", "-b", "-b-days"]:
+    if len(args) < 2 or args[0].lower() not in ["-n", "-p", "-e", "-b", "-b-days", "-a"]\
+            and not args[0].lower().startswith("-in-"):
         raise MyException(f"Please, specify the search parameter, e.g.:\n{INSTRUCTION_FIND}")
     match args[0].lower():
-        case "-np":
-            param = "substring"
-            res = ADDRESSBOOK.get_record_by_string(args[1])
         case "-n":
             param = "name"
             res = ADDRESSBOOK.get_record_by_name(args[1])
@@ -310,11 +317,18 @@ def find_handler(args):
         case "-b-days":
             param = "number of days till birthdays"
             res = ADDRESSBOOK.get_record_by_days_till_birthday(args[1])
+        case "-a":
+            param = "address"
+            res = ADDRESSBOOK.get_record_by_address(" ".join(args[1:]))
+        case _:
+            param = "substring"
+            search_args = args[0].lower()[len("-in-"):]
+            res = ADDRESSBOOK.get_record_by_string(args[1], search_args)
     if not res:
         return f"No record with the {param} '{args[1]}' found."
     elif type(res) == Record:
         return res.to_string()
-    elif len(args) > 2:
+    elif len(args) > 2 and args[0].lower() != "-a":
         try:
             iterator = ABIterator(res, args[2])
             return iterator
@@ -427,6 +441,12 @@ def set_username_handler(args):
     ADDRESSBOOK.set_username(name)
     return f"The username successfully changed to '{name}'."
 
+def new_profile_handler(args=[]):
+    global ADDRESSBOOK
+    ADDRESSBOOK = AddressBook()
+    if len(args) > 0:
+        ADDRESSBOOK.set_username(args[0])
+    return f"New profile for the user '{ADDRESSBOOK.get_username()}' successfully created."
 
 def store_handler(args):
     """
@@ -475,6 +495,7 @@ COMMANDS = {
     show_all_handler: ["show all"],  # showing all records in the address book
     get_username_handler: ["username"],  # showing the username in the address book
     set_username_handler: ["new username"],  # changing the username in the address book
+    new_profile_handler: ["new profile"],  # creating a new empty address book
     store_handler: ["store"],  # storing current address book into a file
     load_handler: ["load"],  # loading an address book from a file
     exit_handler: ["good bye", "close", "exit", "mainmenu"],  # exiting the programme and going back to the main menu
@@ -506,12 +527,12 @@ def input_error(fnc):
 @input_error
 def main_internal():
     while True:
-        u_input = input(f"{PROMT} ")
+        u_input = input(f"{PROMPT} ")
         with warnings.catch_warnings(record=True) as warning_list:
             func, data = command_parser(u_input)
             while not func:
                 print("The command is not defined. Please, use a valid command (call 'help' if needed).")
-                u_input = input(f"{PROMT} ")
+                u_input = input(f"{PROMPT} ")
                 func, data = command_parser(u_input)
             result = func(data)
         for w in warning_list:
@@ -535,6 +556,7 @@ def main_internal():
 def main(*args):
     print("Hello and welcome to the ADDRESS BOOK! How can I help you?\n"
           "(Note: you can enter 'help' to get the list of possible commands)")
+    new_profile_handler()
     main_internal()
     print("Forwarding to the main menu...")
 
