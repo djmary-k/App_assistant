@@ -110,6 +110,7 @@ class NoteBook(UserDict):
     def delete_note(self, name: str):
         try:
             self.data.pop(name)
+            print(f'Note with the name "{name}" succesufully deleted.')
         except KeyError:
             print('Note not found!')
 
@@ -203,7 +204,7 @@ def command_handler(command: str, name: str):
         if name in note_book.keys():
             print('Note already exist')
         else:
-            value = input(f'{name}:\n')
+            value = input('Enter your note:\n')
             tags = input('Put some tags: ')
             note_book.add_note(name, value, tags)
         if name in note_book.keys():
@@ -268,7 +269,7 @@ def command_handler(command: str, name: str):
 
 def main():
     print(command_list())
-    print('You are in Notebook. How can I help you?')
+    print('You are in Note Book. How can I help you?')
     while True:
         user_input = input('NoteBook: ')
         if not user_input:

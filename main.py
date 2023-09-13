@@ -1,35 +1,37 @@
-from address_book.main import main as ab #import AddressBook, Name, Phone, Birthday, Record
-# from note_book.main import main as nb
-# from clean_folder.main import main as cf
-# from prettytable import PrettyTable
+from address_book.main import main as ab
+from note_book.main import main as nb
+from file_sorter.main import main as fs
 from prettytable.colortable import ColorTable, Themes
 
-def hello_handler(*args):
+def hello_handler():
     return 'How can I help you?'
 
-def exit_handler(*args):
+def exit_handler():
     return 'Good bye!'
 
-def menu(*args):
+def menu():
     # x = PrettyTable()
     x = ColorTable(theme=Themes.OCEAN)
     x.header = False
     # x.field_names = ["Menu", 'menu']
     x.add_row(["1", 'Address Book'], divider=True)
     x.add_row(["2", 'Note Book'], divider=True)
-    x.add_row(["3", 'Clean Folder'], divider=True)
+    x.add_row(["3", 'File Sorter'], divider=True)
     x.add_row(["4", 'Commands Description'], divider=True)
     x.add_row(["5", 'EXIT'], divider=True)
     return x
 
-def commands_descr(*args):
+def commands_descr():
     x = ColorTable(theme=Themes.OCEAN)
-    x.header = False
-    x.add_row(["1", 'Address Book'], divider=True)
+    x.field_names = ["1", 'ADDRESS BOOK']
+    x.align['ADDRESS BOOK'] = 'l'
+    x._max_width={"1": 20, 'ADDRESS BOOK': 50}
+    x.add_row(["Command", 'Description'], divider=True)
     x.add_rows(
         [
+            ["hello", 'greeting'],
             ["add", 'adding new contact to the address book'],
-            ["change", 'changing existing contact in the address book'],
+            ["edit", 'editing existing contact in the address book'],
             ["find", 'finding and showing a record in the address book: by name, phone number or e-mail'],
             ["delete", 'deleting a contact from the address book'],
             ["phone", 'showing all phone numbers saved for a given contact'],
@@ -40,58 +42,71 @@ def commands_descr(*args):
             ["new username", 'changing the username in the address book'],
             ["store", 'storing current address book into a file'],
             ["load", 'loading an address book from a file'],
-            ["help", 'storing current address book into a file'],
-        ],
-    )
-    x.add_row(['', ''], divider=True)
-    x.add_row(["2", 'Note Book'], divider=True)
-    x.add_rows(
-        [
-            ["add", 'adding new contact to the address book'],
-            ["change", 'changing existing contact in the address book'],
-            ["find", 'finding and showing a record in the address book: by name, phone number or e-mail'],
-            ["delete", 'deleting a contact from the address book'],
+            ["good bye, close, exit, mainmenu", 'exiting the programme and going back to the main menu'],
+            ["help", 'getting help'],
         ]
     )
     x.add_row(['', ''], divider=True)
-    x.add_row(["3", f'Clean Folder\nFiles will be sorted by types: IMAGES, VIDEO, DOCS, AUDIO, ARCHIVES, OTHERS'], divider=True)
-    x.add_row(["4", 'Commands Description'], divider=True)
+    x.add_row(["2", 'NOTE BOOK'], divider=True)
+    x.add_row(["Command", 'Description'], divider=True)
+    x.add_rows(
+        [
+            ["add", 'to creat a note'],
+            ["edit", 'to edit a note'],
+            ["show", 'to show a note'],
+            ["show_all", 'to show all notes'],
+            ["delete", 'to delete a note'],
+            ["search", 'to find all notes with a tag'],
+            ["add_tag", 'to add tag to a note'],
+            ["del_tag", 'to delete a tag from a note'],
+            ["help", 'to call commands description'],
+            ["exit", 'return to the main menu'],
+        ]
+    )
+    x.add_row(['', ''], divider=True)
+    x.add_row(["3", f'FILE SORTER\nFiles will be sorted by types: Images, Video, Documents, Audio, Archives, Others'], divider=True)
+    x.add_row(["4", 'COMMANDS DESCRIPTION'], divider=True)
     x.add_row(["5", 'EXIT'], divider=True)
     print(x)
-    return 'Go back to menu type "menu".'
+    return 'Check menu options type "menu".'
 
 COMMANDS = {
     menu: 'menu',
-    hello_handler: ['hello', 'hello!', 'hi', 'hi!'],
-    exit_handler: ['5', 'bye', 'good bye', 'close', 'exit', 'quit'],
+    exit_handler: ['5', 'exit'],
     ab: '1',
-    # nb: '2',
-    # cf: '3',
+    nb: '2',
+    fs: '3',
     commands_descr: '4',
 }
 
 def command_parser(raw_str: str):
     elements = raw_str.split()
     for key, value in COMMANDS.items():
-        if raw_str.lower() in value:
-            return key(elements[1:])
-        elif elements[0].lower() in value:
-            return key(elements[1:])
-    return 'Invalid command. Please, try again.'
+        if (raw_str.lower() in value) or (elements and elements[0].lower() in value):
+            return key
+    return 'Invalid command. Please, try again. To see valid options type "menu".'
 
 def run():
-    print("Hello! My name is Luna. I'm your family assistant. Choose one of these options:")
+    print("Hello! My name is Luna. I'm your family assistant. Choose one of the following options:")
     print(menu())
     while True:        
         user_input = input('>>> ')
         if not user_input:
             continue                
-        result = command_parser(user_input)        
-        print(result)
+        func = command_parser(user_input)
+        if isinstance(func, str):
+            result = func
+        else:
+            result = func()
+        if result:       
+            print(result)
+        if func in [ab, nb, fs]:
+            print('Welcome back to main menu! Please, choose one of the following options:')
+            print(menu())
         if result == 'Good bye!':
             break
+        
 
 
 if __name__ == "__main__":
     run()
-
