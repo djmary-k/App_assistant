@@ -207,8 +207,8 @@ def command_handler(command: str, name: str):
             value = input('Enter your note:\n')
             tags = input('Put some tags: ')
             note_book.add_note(name, value, tags)
-        if name in note_book.keys():
-            print(f'Note with the name "{name}" succesufully added.')
+            if name in note_book.keys():
+                print(f'Note with the name "{name}" succesufully added.')
 
     elif command == 'edit':
         value = input('Enter your note:\n')
