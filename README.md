@@ -43,16 +43,17 @@ The following functionality is supported by the application.
 - Showing a note in the *note book*.
 - Showing list of notes in the *note book*.
 - Deleting a note from the *note book*.
-- Finding notes with a keyword and by tag in the *note book*.
 - Adding tag to a note.
 - Delete a tag from a note.
+- Searching for specific notes by information stored in them and by tags.
 - Exiting ***Note Book*** and returning to the main menu.
 
 ### FILE SORTER
 The application ***File Sorter*** allows to sort files by types: Images, Video, Documents, Audio, Archives, Others.
-If the file is unknown, it will move into the folder 'Others'.
+If the file is unknown, it will move into the folder "Others".
 
 The following functionality is supported by the application.
+- Supporting this types of files: JPEG, JPG, PNG, SVG, AVI, MP4, MOV, MKV, DOC, DOCX, TXT, PDF, XLSX, PPTX, MP3, OGG, WAV, AMR, M4A, ZIP, GZ, TAR. Uknowing types moving to folder "Others".
 - Transliterating Cyrillic alphabet to Latin and replacing all symbols to "_" except Latin letters and numbers.
 - Unpacking archives and moving to the folder 'Archives'.
 - Deleting empty folders in the target folder.
