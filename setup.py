@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name='App_assistant',
-    version='1.0.2',
+    version='1.0.3',
     description='Console bot that gives opportunity to save contacts, creat and save notes and sort files.',
     url='https://github.com/djmary-k/App_assistant.git',
     author='Maryna Kondratiuk, Tetiana Shevchenko, Anastasiia Kysliak, Volodymyr Mazurets, Oleksandr Semochkin',

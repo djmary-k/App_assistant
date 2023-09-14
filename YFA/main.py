@@ -1,7 +1,7 @@
 from .address_book.main import main as ab
 from .note_book.main import main as nb
 from .file_sorter.main import main as fs
-from prettytable.colortable import ColorTable, Themes
+import prettytable
 
 def hello_handler():
     return 'How can I help you?'
@@ -10,10 +10,8 @@ def exit_handler():
     return 'Good bye!'
 
 def menu():
-    # x = PrettyTable()
-    x = ColorTable(theme=Themes.OCEAN)
+    x = prettytable.PrettyTable()
     x.header = False
-    # x.field_names = ["Menu", 'menu']
     x.add_row(["1", 'Address Book'], divider=True)
     x.add_row(["2", 'Note Book'], divider=True)
     x.add_row(["3", 'File Sorter'], divider=True)
@@ -22,7 +20,7 @@ def menu():
     return x
 
 def commands_descr():
-    x = ColorTable(theme=Themes.OCEAN)
+    x = prettytable.PrettyTable()
     x.field_names = ["1", 'ADDRESS BOOK']
     x.align['ADDRESS BOOK'] = 'l'
     x._max_width={"1": 20, 'ADDRESS BOOK': 50}
