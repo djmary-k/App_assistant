@@ -289,7 +289,7 @@ class AddressBook(UserDict):
                     if substring in phone:
                         res.append(record)
                         break
-            if not res and 'e' in fields:
+            if (record not in res) and 'e' in fields:
                 for email in record.get_emails():
                     if substring in email:
                         res.append(record)
