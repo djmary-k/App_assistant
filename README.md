@@ -53,7 +53,7 @@ The application ***File Sorter*** allows to sort files by types: Images, Video, 
 If the file is unknown, it will move into the folder "Others".
 
 The following functionality is supported by the application.
-- Supporting this types of files: JPEG, JPG, PNG, SVG, AVI, MP4, MOV, MKV, DOC, DOCX, TXT, PDF, XLSX, PPTX, MP3, OGG, WAV, AMR, M4A, ZIP, GZ, TAR. Uknowing types moving to folder "Others".
+- Supporting file types: JPEG, JPG, PNG, SVG, AVI, MP4, MOV, MKV, DOC, DOCX, TXT, PDF, XLSX, PPTX, MP3, OGG, WAV, AMR, M4A, ZIP, GZ, TAR. Uknowing types moving to folder "Others".
 - Transliterating Cyrillic alphabet to Latin and replacing all symbols to "_" except Latin letters and numbers.
 - Unpacking archives and moving to the folder 'Archives'.
 - Deleting empty folders in the target folder.
