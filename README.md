@@ -1,6 +1,8 @@
 # Your Family Assistant
-## Team project of **Crazy Pythies**
+Team project developed by **Crazy Pythies**
 
+*Your Family Assistant is a console bot that gives you and your family the opportunity to save contacts in the Address Book, creat and save notes in the Note Book and sort your files by File Sorter.*
+## Installation
 ### ADDRESS BOOK
 The application ***Address Book*** allows to create digital *address books* for diverse users. Each user can add new contacts to his/her *address book*, edit them, delete, get them displayed, search for specific contacts by information stored in them. The following information can be stored in an *address book* for each contact:
 
@@ -31,3 +33,26 @@ The following functionality is supported by the application.
 - Getting help.
 
 For detailed instructions on the corresponding commands and required arguments, see the manual.
+
+### NOTE BOOK
+The application ***Note Book*** allows to create digital notes. User can add new notes, edit them, delete, get them displayed, search for specific notes by information stored in them. 
+
+The following functionality is supported by the application.
+- Adding new note to the *note book*.
+- Editing existing note in the *note book*.
+- Showing a note in the *note book*.
+- Showing list of notes in the *note book*.
+- Deleting a note from the *note book*.
+- Finding notes with a keyword and by tag in the *note book*.
+- Adding tag to a note.
+- Delete a tag from a note.
+- Exiting ***Note Book*** and returning to the main menu.
+
+### FILE SORTER
+The application ***File Sorter*** allows to sort files by types: Images, Video, Documents, Audio, Archives, Others.
+If the file is unknown, it will move into the folder 'Others'.
+
+The following functionality is supported by the application.
+- Transliterating Cyrillic alphabet to Latin and replacing all symbols to "_" except Latin letters and numbers.
+- Unpacking archives and moving to the folder 'Archives'.
+- Deleting empty folders in the target folder.
