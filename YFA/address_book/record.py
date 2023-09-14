@@ -1,6 +1,6 @@
-from address_book.fields import *
+from .fields import *
 from collections import deque
-from address_book.myexception import *
+from .myexception import *
 from datetime import datetime
 import warnings
 from prettytable import PrettyTable

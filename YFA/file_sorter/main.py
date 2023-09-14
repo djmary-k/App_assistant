@@ -1,5 +1,5 @@
 from pathlib import Path
-import file_sorter.sort as sort
+from . import sort
 
 
 def main():

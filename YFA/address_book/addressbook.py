@@ -1,11 +1,11 @@
 from collections import UserDict
-from address_book.record import *
-from address_book.change import *
+from .record import *
+from .change import *
 import warnings
 import pickle
 import os
 from datetime import datetime, timedelta
-from address_book.myexception import *
+from .myexception import *
 
 
 class ABIterator:

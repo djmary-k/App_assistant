@@ -1,6 +1,6 @@
 import warnings
 #from datetime import datetime
-from address_book.myexception import MyException
+from .myexception import MyException
 
 
 class Field:

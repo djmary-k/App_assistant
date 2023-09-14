@@ -1,4 +1,4 @@
-from address_book.addressbook import *
+from .addressbook import *
 import os
 import warnings
 from prettytable import PrettyTable
