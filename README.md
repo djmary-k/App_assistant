@@ -3,6 +3,11 @@ Team project developed by **Crazy Pythies**
 
 *Your Family Assistant is a console bot that gives you and your family the opportunity to save contacts in the Address Book, creat and save notes in the Note Book and sort your files by File Sorter.*
 ## Installation
+Install via pip:
+
+    pip install -i https://test.pypi.org/simple/ App-assistant
+
+## Description
 ### ADDRESS BOOK
 The application ***Address Book*** allows to create digital *address books* for diverse users. Each user can add new contacts to his/her *address book*, edit them, delete, get them displayed, search for specific contacts by information stored in them. The following information can be stored in an *address book* for each contact:
 
