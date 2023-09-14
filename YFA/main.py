@@ -1,6 +1,6 @@
-from address_book.main import main as ab
-from note_book.main import main as nb
-from file_sorter.main import main as fs
+from .address_book.main import main as ab
+from .note_book.main import main as nb
+from .file_sorter.main import main as fs
 from prettytable.colortable import ColorTable, Themes
 
 def hello_handler():
