@@ -102,18 +102,18 @@ HELP_STRING = "This programme supports the following commands\n" \
               f"4.\tSearching for a record in the address book:\n{INSTRUCTION_FIND}\n" \
               "5.\tDeleting a contact from the address book:\n" \
               "\tdelete <name>\n" \
-              "6.\tShowing all phone numbers saved for a given contact:\n" \
+              "6.\tShowing all saved phone numbers for a given contact:\n" \
               "\tphone <name>\n" \
-              "7.\tShowing all emails saved for a given contact:\n" \
+              "7.\tShowing all saved emails for a given contact:\n" \
               "\temail <name>\n" \
-              "8.\tShowing birthday info saved for a given contact:\n" \
+              "8.\tShowing saved birthday info for a given contact:\n" \
               "\tbirthday <name>\n" \
               "9.\tShowing all records in the address book:\n" \
               "\tshow all (<n>)\n" \
               "\t(The optional parameter <n> specifies the maximum number of records to be displayed at once.)\n"\
               "10.\tShowing the name of the current address book owner (user name, also used to store the address book):\n" \
               "\tusername\n" \
-              "11.\tChanging the name of the owner of the current address book:\n" \
+              "11.\tChanging the owner name of the current address book:\n" \
               "\tnew username <username>\n" \
               "12.\tStoring current address book into a file (under the current user name):\n" \
               "\tstore\n" \

@@ -12,14 +12,14 @@ COMMANDS = (
 
 DESCRIPTION = (
     'to creat a note with the name <name> \
-and add it to the Note Book. You will be promted \
+and add it to the Note Book. You will be prompted \
 to enter the note text under the name.',
     'to edit a note with the name <name>.',
     'to show a note with the name <name>.',
-    'to show all notes.',
+    'to show list of all notes.',
     'to delete a note with the name <name>.',
-    'to find a keyword in the notes <keyword>',
-    'to find all notes with a tag <tag>.',
+    'to find notes with a keyword <keyword>.',
+    'to find all notes by tag <tag>.',
     'to add tag to a note with the name <name>. \
 You can enter multiple tags separated by ", "',
     'to delete a tag from a note with the name <name>. \
@@ -245,12 +245,13 @@ def command_handler(command: str, name: str):
     elif command == 'add_tag':
         if not name in note_book.keys():
             print(f'Note with the name "{name}" does not exist.')
-        elif tags:
-            tags = input('Enter tags to add:\n')
-            note_book.data[name].add_tag(tags)
-            print(f'Tag(s) "{tags}" succesufully added to the note with the name "{name}".')
         else:
-            print('Tag is too short')
+            tags = input('Enter tags to add:\n')
+            if tags:
+                note_book.data[name].add_tag(tags)
+                print(f'Tag(s) "{tags}" succesufully added to the note with the name "{name}".')
+            else:
+                print('Tag is too short')
 
     elif command == 'del_tag':
         if not name in note_book.keys():

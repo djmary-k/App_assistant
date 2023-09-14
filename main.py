@@ -30,20 +30,21 @@ def commands_descr():
     x.add_rows(
         [
             ["hello", 'greeting'],
-            ["add", 'adding new contact to the address book'],
-            ["edit", 'editing existing contact in the address book'],
-            ["find", 'finding and showing a record in the address book: by name, phone number or e-mail'],
-            ["delete", 'deleting a contact from the address book'],
-            ["phone", 'showing all phone numbers saved for a given contact'],
-            ["email", 'howing all e-mails saved for a given contact'],
-            ["birthday", 'showing the birthday info stored for a given contact'],
-            ["show all", 'showing all records in the address book'],
-            ["username", 'showing the username in the address book'],
-            ["new username", 'changing the username in the address book'],
-            ["store", 'storing current address book into a file'],
-            ["load", 'loading an address book from a file'],
-            ["good bye, close, exit, mainmenu", 'exiting the programme and going back to the main menu'],
-            ["help", 'getting help'],
+            ["add", 'to add new contact to the address book'],
+            ["edit", 'to edit existing contact in the address book'],
+            ["find", 'to find and show a record in the address book by: name, phone number or e-mail'],
+            ["delete", 'to delete a contact from the address book'],
+            ["phone", 'to show all saved phone numbers for a given contact'],
+            ["email", 'to show all saved e-mails for a given contact'],
+            ["birthday", 'to show saved birthday info for a given contact'],
+            ["show all", 'to show all records in the address book'],
+            ["username", 'to show the name of the current address book owner'],
+            ["new username", 'to change the owner name of the current address book'],
+            ["store", 'to store current address book into a file'],
+            ["load", 'to load an address book from a file'],
+            ["new profile", 'to create a new empty address book'],
+            ["good bye, close, exit, mainmenu", 'to exit the Address Book and go back to the main menu'],
+            ["help", 'to get help'],
         ]
     )
     x.add_row(['', ''], divider=True)
@@ -54,13 +55,14 @@ def commands_descr():
             ["add", 'to creat a note'],
             ["edit", 'to edit a note'],
             ["show", 'to show a note'],
-            ["show_all", 'to show all notes'],
+            ["show_all", 'to show list of all notes'],
             ["delete", 'to delete a note'],
-            ["search", 'to find all notes with a tag'],
+            ["search", 'to find notes with a keyword'],
+            ["search", 'to find all notes by tag'],
             ["add_tag", 'to add tag to a note'],
             ["del_tag", 'to delete a tag from a note'],
             ["help", 'to call commands description'],
-            ["exit", 'return to the main menu'],
+            ["exit", 'to return to the main menu'],
         ]
     )
     x.add_row(['', ''], divider=True)
